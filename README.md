@@ -13,7 +13,7 @@ sounddevice (live audio capture)
       |
 Vosk (offline speech recognition, restricted grammar)
       |
-Wake-word text match ("jarvis" / "hey jarvis")
+Wake-word text match ("astra" / "hey astra")
       |
 Confidence + latency measured
       |
@@ -26,9 +26,9 @@ Tkinter dashboard updates
 Vosk is fully offline, needs no API key or account, installs with a single
 `pip install`, and ships small pre-trained models with no training step.
 It does continuous speech-to-text; the wake word is detected by restricting
-its recognition grammar to `["jarvis", "hey jarvis", "[unk]"]`, which made
+its recognition grammar to `["astra", "hey astra", "[unk]"]`, which made
 detection of the short name reliable in testing (unrestricted recognition
-frequently misheard "jarvis" as similar-sounding words).
+frequently misheard "astra" as similar-sounding words).
 
 Confidence scores shown in the dashboard are **real per-word confidence
 values from Vosk's decoder** (`SetWords(True)`), not invented numbers.
@@ -79,7 +79,7 @@ python mic_test.py
 
 # 2. Confirm wake-word detection works in the terminal (no GUI)
 python wake_test.py
-# Say "jarvis" or "hey jarvis" a few times, Ctrl+C to stop
+# Say "astra" or "hey astra" a few times, Ctrl+C to stop
 
 # 3. Run the full dashboard
 python main.py
@@ -89,7 +89,7 @@ python main.py
 
 1. Run `python main.py`
 2. Click **START LISTENING**
-3. Say **"Hey Jarvis"** (or just "Jarvis")
+3. Say **"Hey Astra"** (or just "Astra")
 4. Dashboard shows `DETECTED ✅`, the virtual LED turns green, latency and
    confidence are displayed, and a desktop notification fires
 5. LED automatically reverts to OFF after ~2 seconds; the system keeps listening
@@ -101,14 +101,14 @@ Edit the two constants near the top of `main.py` (and `wake_test.py` if you
 want the terminal test to match):
 
 ```python
-WAKE_WORD = "jarvis"
-WAKE_PHRASE = "hey jarvis"
+WAKE_WORD = "astra"
+WAKE_PHRASE = "hey astra"
 ```
 
 Also update the `grammar` line to include your new word(s):
 
 ```python
-grammar = '["jarvis", "hey jarvis", "[unk]"]'
+grammar = '["astra", "hey astra", "[unk]"]'
 ```
 
 Short or unusual words may need testing - Vosk's small model can misrecognize

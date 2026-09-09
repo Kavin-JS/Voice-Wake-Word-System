@@ -14,8 +14,8 @@ from datetime import datetime
 # CONFIGURATION
 # ==============================
 
-WAKE_WORD = "jarvis"
-WAKE_PHRASE = "hey jarvis"
+WAKE_WORD = "astra"
+WAKE_PHRASE = "hey astra"
 COOLDOWN_SECONDS = 2.0
 MODEL_PATH = "model"
 SAMPLE_RATE = 16000
@@ -44,7 +44,7 @@ def detection_worker():
         event_queue.put(("status", "Stopped"))
         return
 
-    grammar = '["jarvis", "hey jarvis", "[unk]"]'
+    grammar = '["astra", "hey astra", "[unk]"]'
     rec = vosk.KaldiRecognizer(model, SAMPLE_RATE, grammar)
     rec.SetWords(True)
 
@@ -89,7 +89,7 @@ def detection_worker():
                             confidence = "N/A"
                             if "result" in result:
                                 matching_words = [w for w in result["result"]
-                                                   if w.get("word", "") in ["jarvis", "hey"]]
+                                                   if w.get("word", "") in ["astra", "hey"]]
                                 if matching_words:
                                     confs = [w.get("conf", 0) for w in matching_words]
                                     confidence = f"{sum(confs) / len(confs):.2f}"
