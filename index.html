@@ -1,0 +1,2705 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Low-Latency Speech Processing
+    </title>
+
+
+    <style>
+
+        /* ======================================================
+           GLOBAL
+           ====================================================== */
+
+        * {
+            box-sizing: border-box;
+        }
+
+
+        body {
+
+            margin: 0;
+
+            min-height: 100vh;
+
+            background:
+                #08111f;
+
+            color:
+                #ffffff;
+
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+
+            padding:
+                22px 3% 16px;
+        }
+
+
+        /* ======================================================
+           HEADER
+           ====================================================== */
+
+        .header {
+
+            text-align:
+                center;
+
+            margin-bottom:
+                18px;
+        }
+
+
+        .header h1 {
+
+            margin:
+                0;
+
+            font-size:
+                27px;
+
+            font-weight:
+                700;
+        }
+
+
+        .header p {
+
+            margin:
+                4px 0 0;
+
+            color:
+                #29b6ff;
+
+            font-size:
+                14px;
+        }
+
+
+        /* ======================================================
+           TOP STATUS BAR
+           ====================================================== */
+
+        .status-bar {
+
+            width:
+                100%;
+
+            min-height:
+                34px;
+
+            border:
+                1px solid #29415f;
+
+            border-radius:
+                8px;
+
+            background:
+                #101d31;
+
+            display:
+                flex;
+
+            align-items:
+                center;
+
+            justify-content:
+                space-between;
+
+            padding:
+                7px 15px;
+
+            margin-bottom:
+                14px;
+
+            font-size:
+                12px;
+        }
+
+
+        .status-left {
+
+            color:
+                #ffffff;
+        }
+
+
+        .status-left span {
+
+            font-weight:
+                700;
+        }
+
+
+        .connected {
+
+            color:
+                #00ff88;
+        }
+
+
+        .disconnected {
+
+            color:
+                #ff5555;
+        }
+
+
+        .status-center {
+
+            color:
+                #d9e5f2;
+        }
+
+
+        .status-right {
+
+            color:
+                #b9c9da;
+        }
+
+
+        /* ======================================================
+           VISUALIZATION GRID
+           ====================================================== */
+
+        .visual-grid {
+
+            display:
+                grid;
+
+            grid-template-columns:
+                1fr 1fr;
+
+            gap:
+                14px;
+
+            margin-bottom:
+                14px;
+        }
+
+
+        .panel {
+
+            background:
+                #1a293d;
+
+            border:
+                1px solid #2b435f;
+
+            border-radius:
+                11px;
+
+            padding:
+                14px;
+        }
+
+
+        .panel-title {
+
+            font-size:
+                14px;
+
+            font-weight:
+                700;
+
+            margin-bottom:
+                4px;
+
+            color:
+                #ffffff;
+        }
+
+
+        .panel-subtitle {
+
+            font-size:
+                10px;
+
+            color:
+                #7890a8;
+
+            margin-bottom:
+                9px;
+        }
+
+
+        canvas {
+
+            width:
+                100%;
+
+            display:
+                block;
+
+            border-radius:
+                6px;
+
+            background:
+                #020817;
+        }
+
+
+        #waveformCanvas {
+
+            height:
+                215px;
+        }
+
+
+        #logMelCanvas {
+
+            height:
+                215px;
+        }
+
+
+        #mfccCanvas {
+
+            height:
+                215px;
+        }
+
+
+        /* ======================================================
+           MFCC FULL-WIDTH PANEL
+           ====================================================== */
+
+        .mfcc-panel {
+
+            margin-bottom:
+                14px;
+        }
+
+
+        /* ======================================================
+           PIPELINE
+           ====================================================== */
+
+        .pipeline-panel {
+
+            margin-bottom:
+                14px;
+        }
+
+
+        .pipeline-title {
+
+            font-size:
+                14px;
+
+            font-weight:
+                700;
+
+            margin-bottom:
+                12px;
+        }
+
+
+        .pipeline {
+
+            display:
+                flex;
+
+            align-items:
+                center;
+
+            justify-content:
+                center;
+
+            gap:
+                7px;
+
+            flex-wrap:
+                wrap;
+        }
+
+
+        .pipeline-box {
+
+            min-width:
+                102px;
+
+            height:
+                58px;
+
+            border:
+                1px solid #36506d;
+
+            background:
+                #0d1a2d;
+
+            border-radius:
+                7px;
+
+            display:
+                flex;
+
+            flex-direction:
+                column;
+
+            align-items:
+                center;
+
+            justify-content:
+                center;
+
+            text-align:
+                center;
+        }
+
+
+        .pipeline-box strong {
+
+            font-size:
+                11px;
+
+            color:
+                #29b6ff;
+
+            margin-bottom:
+                4px;
+        }
+
+
+        .pipeline-box small {
+
+            font-size:
+                8px;
+
+            color:
+                #8195ab;
+        }
+
+
+        .pipeline-arrow {
+
+            color:
+                #6c8199;
+
+            font-size:
+                19px;
+        }
+
+
+        /* ======================================================
+           PERFORMANCE PANEL
+           ====================================================== */
+
+        .performance-panel {
+
+            background:
+                #1a293d;
+
+            border:
+                1px solid #2b435f;
+
+            border-radius:
+                11px;
+
+            padding:
+                14px;
+        }
+
+
+        .performance-title {
+
+            font-size:
+                14px;
+
+            font-weight:
+                700;
+
+            margin-bottom:
+                12px;
+        }
+
+
+        .metric-grid {
+
+            display:
+                grid;
+
+            grid-template-columns:
+                repeat(4, 1fr);
+
+            gap:
+                9px;
+        }
+
+
+        .metric {
+
+            background:
+                #0b172a;
+
+            border-radius:
+                7px;
+
+            padding:
+                12px 8px;
+
+            text-align:
+                center;
+        }
+
+
+        .metric-label {
+
+            color:
+                #29b6ff;
+
+            font-size:
+                10px;
+
+            margin-bottom:
+                5px;
+        }
+
+
+        .metric-value {
+
+            color:
+                #ffffff;
+
+            font-size:
+                20px;
+
+            font-weight:
+                700;
+        }
+
+
+        #probability {
+
+            transition:
+                color 0.15s ease;
+        }
+
+
+        /* ======================================================
+           CONFIGURATION
+           ====================================================== */
+
+        .config-grid {
+
+            display:
+                grid;
+
+            grid-template-columns:
+                repeat(5, 1fr);
+
+            gap:
+                8px;
+
+            margin-top:
+                9px;
+        }
+
+
+        .config-item {
+
+            background:
+                #0d1a2d;
+
+            border-radius:
+                7px;
+
+            text-align:
+                center;
+
+            padding:
+                8px 5px;
+        }
+
+
+        .config-label {
+
+            color:
+                #7e94aa;
+
+            font-size:
+                9px;
+
+            margin-bottom:
+                3px;
+        }
+
+
+        .config-value {
+
+            color:
+                #ffffff;
+
+            font-size:
+                11px;
+
+            font-weight:
+                700;
+        }
+
+
+        /* ======================================================
+           REPRESENTATION INFO
+           ====================================================== */
+
+        .info-grid {
+
+            display:
+                grid;
+
+            grid-template-columns:
+                1fr 1fr;
+
+            gap:
+                8px;
+
+            margin-top:
+                9px;
+        }
+
+
+        .info-box {
+
+            background:
+                #0d1a2d;
+
+            border-radius:
+                7px;
+
+            padding:
+                9px 11px;
+
+            font-size:
+                9px;
+
+            color:
+                #8da0b5;
+        }
+
+
+        .info-box strong {
+
+            color:
+                #ffffff;
+        }
+
+
+        /* ======================================================
+           DETECTION BANNER
+           ====================================================== */
+
+        #detectionBanner {
+
+            margin-top:
+                10px;
+
+            width:
+                100%;
+
+            min-height:
+                42px;
+
+            border:
+                1px solid #29415f;
+
+            border-radius:
+                7px;
+
+            background:
+                #0d1a2d;
+
+            display:
+                flex;
+
+            align-items:
+                center;
+
+            justify-content:
+                center;
+
+            font-size:
+                15px;
+
+            color:
+                #29b6ff;
+
+            font-weight:
+                600;
+
+            transition:
+                all 0.15s ease;
+        }
+
+
+        /* ======================================================
+           LATENCY STATUS
+           ====================================================== */
+
+        #latencyStatus {
+
+            margin-top:
+                8px;
+
+            width:
+                100%;
+
+            min-height:
+                31px;
+
+            border:
+                1px solid rgba(
+                    0,
+                    255,
+                    136,
+                    0.35
+                );
+
+            border-radius:
+                6px;
+
+            background:
+                rgba(
+                    0,
+                    255,
+                    136,
+                    0.08
+                );
+
+            display:
+                flex;
+
+            align-items:
+                center;
+
+            justify-content:
+                center;
+
+            color:
+                #00ff88;
+
+            font-size:
+                10px;
+
+            font-weight:
+                700;
+        }
+
+
+        /* ======================================================
+           FOOTER
+           ====================================================== */
+
+        .footer {
+
+            text-align:
+                center;
+
+            color:
+                #586d84;
+
+            font-size:
+                9px;
+
+            margin-top:
+                12px;
+        }
+
+
+        /* ======================================================
+           RESPONSIVE
+           ====================================================== */
+
+        @media (
+            max-width: 900px
+        ) {
+
+            .visual-grid {
+
+                grid-template-columns:
+                    1fr;
+            }
+
+
+            .metric-grid {
+
+                grid-template-columns:
+                    repeat(2, 1fr);
+            }
+
+
+            .config-grid {
+
+                grid-template-columns:
+                    repeat(2, 1fr);
+            }
+
+
+            .status-bar {
+
+                flex-direction:
+                    column;
+
+                gap:
+                    5px;
+
+                align-items:
+                    flex-start;
+            }
+        }
+
+
+        @media (
+            max-width: 600px
+        ) {
+
+            body {
+
+                padding:
+                    12px;
+            }
+
+
+            .metric-grid {
+
+                grid-template-columns:
+                    1fr;
+            }
+
+
+            .config-grid {
+
+                grid-template-columns:
+                    1fr;
+            }
+
+
+            .info-grid {
+
+                grid-template-columns:
+                    1fr;
+            }
+
+
+            .pipeline-arrow {
+
+                display:
+                    none;
+            }
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <!-- ======================================================
+         HEADER
+         ====================================================== -->
+
+    <div class="header">
+
+        <h1>
+            Low-Latency Speech Processing
+        </h1>
+
+        <p>
+            Real-Time Log-Mel &amp; MFCC Spectral Analysis
+            &amp; Wake-Word Inference
+        </p>
+
+    </div>
+
+
+    <!-- ======================================================
+         STATUS BAR
+         ====================================================== -->
+
+    <div class="status-bar">
+
+        <div class="status-left">
+
+            System:
+
+            <span
+                id="connectionStatus"
+                class="connected"
+            >
+                ● CONNECTING
+            </span>
+
+        </div>
+
+
+        <div class="status-center">
+
+            Processing:
+
+            <strong>
+                REAL-TIME PROCESSING
+            </strong>
+
+        </div>
+
+
+        <div class="status-right">
+
+            Detections:
+
+            <strong id="detectionCount">
+                0
+            </strong>
+
+        </div>
+
+    </div>
+
+
+    <!-- ======================================================
+         RAW AUDIO + LOG-MEL
+         ====================================================== -->
+
+    <div class="visual-grid">
+
+
+        <!-- RAW WAVEFORM -->
+
+        <div class="panel">
+
+            <div class="panel-title">
+                Raw Audio Signal
+            </div>
+
+            <div class="panel-subtitle">
+                16 kHz microphone waveform
+            </div>
+
+            <canvas
+                id="waveformCanvas"
+                width="900"
+                height="215"
+            ></canvas>
+
+        </div>
+
+
+        <!-- LOG-MEL -->
+
+        <div class="panel">
+
+            <div class="panel-title">
+                Log-Mel Spectrogram
+            </div>
+
+            <div class="panel-subtitle">
+                40 Mel bands · 300–3400 Hz ·
+                time-frequency representation
+            </div>
+
+            <canvas
+                id="logMelCanvas"
+                width="900"
+                height="215"
+            ></canvas>
+
+        </div>
+
+    </div>
+
+
+    <!-- ======================================================
+         MFCC
+         ====================================================== -->
+
+    <div class="panel mfcc-panel">
+
+        <div class="panel-title">
+            MFCC Spectrum
+        </div>
+
+        <div class="panel-subtitle">
+            13 Mel-Frequency Cepstral Coefficients ·
+            compact speech representation
+        </div>
+
+        <canvas
+            id="mfccCanvas"
+            width="1800"
+            height="215"
+        ></canvas>
+
+    </div>
+
+
+    <!-- ======================================================
+         SIGNAL PROCESSING PIPELINE
+         ====================================================== -->
+
+    <div class="panel pipeline-panel">
+
+        <div class="pipeline-title">
+            Signal Processing Pipeline
+        </div>
+
+
+        <div class="pipeline">
+
+
+            <div class="pipeline-box">
+
+                <strong>
+                    MICROPHONE
+                </strong>
+
+                <small>
+                    Raw Audio
+                </small>
+
+            </div>
+
+
+            <div class="pipeline-arrow">
+                →
+            </div>
+
+
+            <div class="pipeline-box">
+
+                <strong>
+                    PREPROCESS
+                </strong>
+
+                <small>
+                    Filter + Enhance
+                </small>
+
+            </div>
+
+
+            <div class="pipeline-arrow">
+                →
+            </div>
+
+
+            <div class="pipeline-box">
+
+                <strong>
+                    FRAMING
+                </strong>
+
+                <small>
+                    25 ms / 10 ms
+                </small>
+
+            </div>
+
+
+            <div class="pipeline-arrow">
+                →
+            </div>
+
+
+            <div class="pipeline-box">
+
+                <strong>
+                    STFT / FFT
+                </strong>
+
+                <small>
+                    Time → Frequency
+                </small>
+
+            </div>
+
+
+            <div class="pipeline-arrow">
+                →
+            </div>
+
+
+            <div class="pipeline-box">
+
+                <strong>
+                    MEL FILTER
+                </strong>
+
+                <small>
+                    40 Bands
+                </small>
+
+            </div>
+
+
+            <div class="pipeline-arrow">
+                →
+            </div>
+
+
+            <div class="pipeline-box">
+
+                <strong>
+                    LOG
+                </strong>
+
+                <small>
+                    Compression
+                </small>
+
+            </div>
+
+
+            <div class="pipeline-arrow">
+                →
+            </div>
+
+
+            <div class="pipeline-box">
+
+                <strong>
+                    MFCC
+                </strong>
+
+                <small>
+                    13 Coefficients
+                </small>
+
+            </div>
+
+
+            <div class="pipeline-arrow">
+                →
+            </div>
+
+
+            <div class="pipeline-box">
+
+                <strong>
+                    WAKE MODEL
+                </strong>
+
+                <small>
+                    Alexa
+                </small>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ======================================================
+         PERFORMANCE
+         ====================================================== -->
+
+    <div class="performance-panel">
+
+
+        <div class="performance-title">
+            Processing Performance
+        </div>
+
+
+        <!-- ==================================================
+             MAIN METRICS
+             ================================================== -->
+
+        <div class="metric-grid">
+
+
+            <div class="metric">
+
+                <div class="metric-label">
+                    DSP + Log-Mel
+                </div>
+
+                <div
+                    class="metric-value"
+                    id="featureTime"
+                >
+                    0.00 ms
+                </div>
+
+            </div>
+
+
+            <div class="metric">
+
+                <div class="metric-label">
+                    Model Inference
+                </div>
+
+                <div
+                    class="metric-value"
+                    id="inferenceTime"
+                >
+                    0.00 ms
+                </div>
+
+            </div>
+
+
+            <div class="metric">
+
+                <div class="metric-label">
+                    Computational Latency
+                </div>
+
+                <div
+                    class="metric-value"
+                    id="totalTime"
+                >
+                    0.00 ms
+                </div>
+
+            </div>
+
+
+            <div class="metric">
+
+                <div class="metric-label">
+                    Wake Word Probability
+                </div>
+
+                <div
+                    class="metric-value"
+                    id="probability"
+                >
+                    0.000
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ==================================================
+             CONFIGURATION
+             ================================================== -->
+
+        <div class="config-grid">
+
+
+            <div class="config-item">
+
+                <div class="config-label">
+                    Sample Rate
+                </div>
+
+                <div class="config-value">
+                    16 kHz
+                </div>
+
+            </div>
+
+
+            <div class="config-item">
+
+                <div class="config-label">
+                    Frame Size
+                </div>
+
+                <div class="config-value">
+                    25 ms
+                </div>
+
+            </div>
+
+
+            <div class="config-item">
+
+                <div class="config-label">
+                    Frame Step
+                </div>
+
+                <div class="config-value">
+                    10 ms
+                </div>
+
+            </div>
+
+
+            <div class="config-item">
+
+                <div class="config-label">
+                    Mel Filters
+                </div>
+
+                <div class="config-value">
+                    40
+                </div>
+
+            </div>
+
+
+            <div class="config-item">
+
+                <div class="config-label">
+                    MFCC
+                </div>
+
+                <div class="config-value">
+                    13
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ==================================================
+             INFORMATION
+             ================================================== -->
+
+        <div class="info-grid">
+
+
+            <div class="info-box">
+
+                Log-Mel:
+
+                <strong>
+                    Time-Frequency Speech Representation
+                </strong>
+
+            </div>
+
+
+            <div class="info-box">
+
+                MFCC:
+
+                <strong>
+                    Compact Cepstral Speech Features
+                </strong>
+
+            </div>
+
+
+            <div class="info-box">
+
+                Inference:
+
+                <strong>
+                    Streaming Micro-Wake-Word Model
+                </strong>
+
+            </div>
+
+
+            <div class="info-box">
+
+                Wake Threshold:
+
+                <strong>
+                    0.66
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <!-- ==================================================
+             DETECTION BANNER
+             ================================================== -->
+
+        <div id="detectionBanner">
+
+            ● SIGNAL PROCESSING
+
+        </div>
+
+
+        <!-- ==================================================
+             LATENCY STATUS
+             ================================================== -->
+
+        <div id="latencyStatus">
+
+            COMPUTATIONAL PROCESSING
+
+        </div>
+
+
+    </div>
+
+
+    <!-- ======================================================
+         FOOTER
+         ====================================================== -->
+
+    <div class="footer">
+
+        Real-time microphone
+        →
+        DSP preprocessing
+        →
+        FFT
+        →
+        Log-Mel
+        →
+        MFCC analysis
+        →
+        streaming wake-word inference
+
+    </div>
+
+
+    <!-- ======================================================
+         JAVASCRIPT
+         ====================================================== -->
+
+    <script>
+
+
+        // ====================================================
+        // SETTINGS
+        // ====================================================
+
+        const POLL_INTERVAL = 100;
+
+        const WAKE_THRESHOLD = 0.66;
+
+        let lastDetectionCount = 0;
+
+
+        // ====================================================
+        // ELEMENT HELPER
+        // ====================================================
+
+        function el(id) {
+
+            return document.getElementById(id);
+        }
+
+
+        // ====================================================
+        // CONNECTION STATUS
+        // ====================================================
+
+        function setConnectionStatus(
+            connected
+        ) {
+
+            const element =
+                el("connectionStatus");
+
+
+            if (!element) {
+                return;
+            }
+
+
+            if (connected) {
+
+                element.innerHTML =
+                    "● CONNECTED";
+
+                element.className =
+                    "connected";
+
+            } else {
+
+                element.innerHTML =
+                    "● DISCONNECTED";
+
+                element.className =
+                    "disconnected";
+            }
+        }
+
+
+        // ====================================================
+        // PROBABILITY
+        // ====================================================
+
+        function updateProbability(
+            probability
+        ) {
+
+            const element =
+                el("probability");
+
+
+            if (!element) {
+                return;
+            }
+
+
+            const value =
+                Number(
+                    probability || 0
+                );
+
+
+            element.textContent =
+                value.toFixed(3);
+
+
+            if (
+                value >= WAKE_THRESHOLD
+            ) {
+
+                element.style.color =
+                    "#00ff88";
+
+            } else {
+
+                element.style.color =
+                    "#ffffff";
+            }
+        }
+
+
+        // ====================================================
+        // DETECTION COUNT
+        // ====================================================
+
+        function updateDetectionCount(
+            count
+        ) {
+
+            const element =
+                el("detectionCount");
+
+
+            if (!element) {
+                return;
+            }
+
+
+            element.textContent =
+                Number(
+                    count || 0
+                );
+        }
+
+
+        // ====================================================
+        // LATENCY
+        // ====================================================
+
+        function formatMs(value) {
+
+            return (
+                Number(
+                    value || 0
+                ).toFixed(2)
+                + " ms"
+            );
+        }
+
+
+        function updateLatency(
+            data
+        ) {
+
+            const featureElement =
+                el("featureTime");
+
+
+            const inferenceElement =
+                el("inferenceTime");
+
+
+            const totalElement =
+                el("totalTime");
+
+
+            if (featureElement) {
+
+                featureElement.textContent =
+                    formatMs(
+                        data.feature_time_ms
+                    );
+            }
+
+
+            if (inferenceElement) {
+
+                inferenceElement.textContent =
+                    formatMs(
+                        data.inference_time_ms
+                    );
+            }
+
+
+            if (totalElement) {
+
+                totalElement.textContent =
+                    formatMs(
+                        data.total_time_ms
+                    );
+            }
+        }
+
+
+        // ====================================================
+        // LATENCY STATUS
+        // ====================================================
+
+        function updateLatencyStatus(
+            totalTime
+        ) {
+
+            const element =
+                el("latencyStatus");
+
+
+            if (!element) {
+                return;
+            }
+
+
+            const value =
+                Number(
+                    totalTime || 0
+                );
+
+
+            if (
+                value < 1.0
+            ) {
+
+                element.textContent =
+                    "VERY LOW-LATENCY COMPUTATIONAL PROCESSING · "
+                    + value.toFixed(2)
+                    + " ms";
+
+            } else if (
+                value < 5.0
+            ) {
+
+                element.textContent =
+                    "LOW-LATENCY COMPUTATIONAL PROCESSING · "
+                    + value.toFixed(2)
+                    + " ms";
+
+            } else {
+
+                element.textContent =
+                    "COMPUTATIONAL PROCESSING · "
+                    + value.toFixed(2)
+                    + " ms";
+            }
+        }
+
+
+        // ====================================================
+        // DETECTION BANNER
+        // ====================================================
+
+        function updateDetectionState(
+            data
+        ) {
+
+            const banner =
+                el("detectionBanner");
+
+
+            if (!banner) {
+                return;
+            }
+
+
+            const probability =
+                Number(
+                    data.probability || 0
+                );
+
+
+            const detected =
+                data.detected === true;
+
+
+            if (
+                detected ||
+                probability >= WAKE_THRESHOLD
+            ) {
+
+                banner.textContent =
+                    "● ALEXA DETECTED";
+
+
+                banner.style.color =
+                    "#00ff88";
+
+
+                banner.style.background =
+                    "rgba(0,255,136,0.10)";
+
+
+                banner.style.border =
+                    "1px solid rgba(0,255,136,0.50)";
+
+
+                banner.style.fontWeight =
+                    "700";
+
+            } else {
+
+                banner.textContent =
+                    "● SIGNAL PROCESSING";
+
+
+                banner.style.color =
+                    "#29b6ff";
+
+
+                banner.style.background =
+                    "#0d1a2d";
+
+
+                banner.style.border =
+                    "1px solid #29415f";
+
+
+                banner.style.fontWeight =
+                    "600";
+            }
+        }
+
+
+        // ====================================================
+        // WAVEFORM
+        // ====================================================
+
+        function drawWaveform(
+            samples
+        ) {
+
+            const canvas =
+                el("waveformCanvas");
+
+
+            if (
+                !canvas ||
+                !samples ||
+                samples.length === 0
+            ) {
+                return;
+            }
+
+
+            const ctx =
+                canvas.getContext("2d");
+
+
+            const width =
+                canvas.width;
+
+            const height =
+                canvas.height;
+
+
+            ctx.clearRect(
+                0,
+                0,
+                width,
+                height
+            );
+
+
+            // ------------------------------------------------
+            // Background
+            // ------------------------------------------------
+
+            ctx.fillStyle =
+                "#020817";
+
+            ctx.fillRect(
+                0,
+                0,
+                width,
+                height
+            );
+
+
+            // ------------------------------------------------
+            // Grid
+            // ------------------------------------------------
+
+            ctx.strokeStyle =
+                "rgba(100,150,200,0.12)";
+
+            ctx.lineWidth = 1;
+
+
+            for (
+                let i = 1;
+                i < 5;
+                i++
+            ) {
+
+                const y =
+                    height * i / 5;
+
+
+                ctx.beginPath();
+
+                ctx.moveTo(
+                    0,
+                    y
+                );
+
+                ctx.lineTo(
+                    width,
+                    y
+                );
+
+                ctx.stroke();
+            }
+
+
+            // ------------------------------------------------
+            // Center line
+            // ------------------------------------------------
+
+            ctx.strokeStyle =
+                "rgba(100,180,230,0.22)";
+
+
+            ctx.beginPath();
+
+            ctx.moveTo(
+                0,
+                height / 2
+            );
+
+            ctx.lineTo(
+                width,
+                height / 2
+            );
+
+            ctx.stroke();
+
+
+            // ------------------------------------------------
+            // Waveform
+            // ------------------------------------------------
+
+            ctx.strokeStyle =
+                "#29b6ff";
+
+            ctx.lineWidth =
+                2;
+
+
+            ctx.beginPath();
+
+
+            const step =
+                width
+                /
+                Math.max(
+                    1,
+                    samples.length - 1
+                );
+
+
+            for (
+                let i = 0;
+                i < samples.length;
+                i++
+            ) {
+
+                let sample =
+                    Number(
+                        samples[i]
+                    );
+
+
+                sample =
+                    Math.max(
+                        -1,
+                        Math.min(
+                            1,
+                            sample
+                        )
+                    );
+
+
+                const x =
+                    i * step;
+
+
+                const y =
+                    height / 2
+                    -
+                    (
+                        sample
+                        * height
+                        * 0.42
+                    );
+
+
+                if (
+                    i === 0
+                ) {
+
+                    ctx.moveTo(
+                        x,
+                        y
+                    );
+
+                } else {
+
+                    ctx.lineTo(
+                        x,
+                        y
+                    );
+                }
+            }
+
+
+            ctx.stroke();
+        }
+
+
+        // ====================================================
+        // HEATMAP COLOR
+        // ====================================================
+
+        function heatColor(
+            value,
+            min,
+            max
+        ) {
+
+            if (
+                max <= min
+            ) {
+
+                return "rgb(0,120,200)";
+            }
+
+
+            let normalized =
+                (
+                    value - min
+                )
+                /
+                (
+                    max - min
+                );
+
+
+            normalized =
+                Math.max(
+                    0,
+                    Math.min(
+                        1,
+                        normalized
+                    )
+                );
+
+
+            let r;
+            let g;
+            let b;
+
+
+            // ------------------------------------------------
+            // 0.00 - 0.25
+            // Dark blue → blue
+            // ------------------------------------------------
+
+            if (
+                normalized < 0.25
+            ) {
+
+                const t =
+                    normalized / 0.25;
+
+
+                r = 0;
+
+                g =
+                    Math.round(
+                        30 + 80 * t
+                    );
+
+                b =
+                    Math.round(
+                        90 + 165 * t
+                    );
+            }
+
+
+            // ------------------------------------------------
+            // 0.25 - 0.50
+            // Blue → cyan
+            // ------------------------------------------------
+
+            else if (
+                normalized < 0.50
+            ) {
+
+                const t =
+                    (
+                        normalized
+                        - 0.25
+                    )
+                    /
+                    0.25;
+
+
+                r = 0;
+
+                g =
+                    Math.round(
+                        110 + 145 * t
+                    );
+
+                b =
+                    Math.round(
+                        255 - 30 * t
+                    );
+            }
+
+
+            // ------------------------------------------------
+            // 0.50 - 0.75
+            // Cyan → yellow
+            // ------------------------------------------------
+
+            else if (
+                normalized < 0.75
+            ) {
+
+                const t =
+                    (
+                        normalized
+                        - 0.50
+                    )
+                    /
+                    0.25;
+
+
+                r =
+                    Math.round(
+                        255 * t
+                    );
+
+                g = 255;
+
+                b =
+                    Math.round(
+                        220 * (1 - t)
+                    );
+            }
+
+
+            // ------------------------------------------------
+            // 0.75 - 1.00
+            // Yellow → red
+            // ------------------------------------------------
+
+            else {
+
+                const t =
+                    (
+                        normalized
+                        - 0.75
+                    )
+                    /
+                    0.25;
+
+
+                r = 255;
+
+                g =
+                    Math.round(
+                        255 * (1 - t)
+                    );
+
+                b = 0;
+            }
+
+
+            return (
+                "rgb("
+                + r
+                + ","
+                + g
+                + ","
+                + b
+                + ")"
+            );
+        }
+
+
+        // ====================================================
+        // MATRIX RANGE
+        // ====================================================
+
+        function matrixRange(
+            matrix
+        ) {
+
+            let min =
+                Infinity;
+
+
+            let max =
+                -Infinity;
+
+
+            for (
+                let row = 0;
+                row < matrix.length;
+                row++
+            ) {
+
+                if (
+                    !Array.isArray(
+                        matrix[row]
+                    )
+                ) {
+                    continue;
+                }
+
+
+                for (
+                    let col = 0;
+                    col < matrix[row].length;
+                    col++
+                ) {
+
+                    const value =
+                        Number(
+                            matrix[row][col]
+                        );
+
+
+                    if (
+                        Number.isFinite(
+                            value
+                        )
+                    ) {
+
+                        if (
+                            value < min
+                        ) {
+
+                            min =
+                                value;
+                        }
+
+
+                        if (
+                            value > max
+                        ) {
+
+                            max =
+                                value;
+                        }
+                    }
+                }
+            }
+
+
+            if (
+                !Number.isFinite(min)
+                ||
+                !Number.isFinite(max)
+                ||
+                min === max
+            ) {
+
+                min = 0;
+
+                max = 1;
+            }
+
+
+            return {
+                min,
+                max
+            };
+        }
+
+
+        // ====================================================
+        // DRAW HEATMAP
+        // ====================================================
+
+        function drawHeatmap(
+            canvasId,
+            matrix,
+            topLabel,
+            bottomLabel
+        ) {
+
+            const canvas =
+                el(canvasId);
+
+
+            if (
+                !canvas ||
+                !matrix ||
+                matrix.length === 0
+            ) {
+                return;
+            }
+
+
+            if (
+                !Array.isArray(
+                    matrix[0]
+                )
+                ||
+                matrix[0].length === 0
+            ) {
+                return;
+            }
+
+
+            const ctx =
+                canvas.getContext("2d");
+
+
+            const width =
+                canvas.width;
+
+
+            const height =
+                canvas.height;
+
+
+            ctx.clearRect(
+                0,
+                0,
+                width,
+                height
+            );
+
+
+            // ------------------------------------------------
+            // Background
+            // ------------------------------------------------
+
+            ctx.fillStyle =
+                "#020817";
+
+            ctx.fillRect(
+                0,
+                0,
+                width,
+                height
+            );
+
+
+            const rows =
+                matrix.length;
+
+
+            const cols =
+                matrix[0].length;
+
+
+            const cellWidth =
+                width / cols;
+
+
+            const cellHeight =
+                height / rows;
+
+
+            const range =
+                matrixRange(
+                    matrix
+                );
+
+
+            // ------------------------------------------------
+            // Draw cells
+            // ------------------------------------------------
+
+            for (
+                let row = 0;
+                row < rows;
+                row++
+            ) {
+
+                for (
+                    let col = 0;
+                    col < cols;
+                    col++
+                ) {
+
+                    const value =
+                        Number(
+                            matrix[row][col]
+                        );
+
+
+                    ctx.fillStyle =
+                        heatColor(
+                            value,
+                            range.min,
+                            range.max
+                        );
+
+
+                    // Reverse vertical axis
+
+                    const y =
+                        height
+                        -
+                        (
+                            row + 1
+                        )
+                        *
+                        cellHeight;
+
+
+                    ctx.fillRect(
+                        col * cellWidth,
+                        y,
+                        Math.ceil(
+                            cellWidth
+                        ) + 1,
+                        Math.ceil(
+                            cellHeight
+                        ) + 1
+                    );
+                }
+            }
+
+
+            // ------------------------------------------------
+            // Grid
+            // ------------------------------------------------
+
+            ctx.strokeStyle =
+                "rgba(255,255,255,0.08)";
+
+            ctx.lineWidth = 1;
+
+
+            for (
+                let i = 1;
+                i < 5;
+                i++
+            ) {
+
+                const x =
+                    width * i / 5;
+
+
+                ctx.beginPath();
+
+                ctx.moveTo(
+                    x,
+                    0
+                );
+
+                ctx.lineTo(
+                    x,
+                    height
+                );
+
+                ctx.stroke();
+            }
+
+
+            // ------------------------------------------------
+            // Labels
+            // ------------------------------------------------
+
+            ctx.font =
+                "11px Arial";
+
+
+            ctx.fillStyle =
+                "rgba(255,255,255,0.80)";
+
+
+            if (
+                topLabel
+            ) {
+
+                ctx.fillText(
+                    topLabel,
+                    8,
+                    14
+                );
+            }
+
+
+            if (
+                bottomLabel
+            ) {
+
+                ctx.fillText(
+                    bottomLabel,
+                    8,
+                    height - 7
+                );
+            }
+        }
+
+
+        // ====================================================
+        // LOG-MEL
+        // ====================================================
+
+        function drawLogMel(
+            matrix
+        ) {
+
+            drawHeatmap(
+
+                "logMelCanvas",
+
+                matrix,
+
+                "3400 Hz",
+
+                "300 Hz"
+            );
+        }
+
+
+        // ====================================================
+        // MFCC
+        // ====================================================
+
+        function drawMFCC(
+            matrix
+        ) {
+
+            drawHeatmap(
+
+                "mfccCanvas",
+
+                matrix,
+
+                "C12",
+
+                "C0"
+            );
+        }
+
+
+        // ====================================================
+        // UPDATE DASHBOARD
+        // ====================================================
+
+        async function updateDashboard() {
+
+            try {
+
+
+                const response =
+                    await fetch(
+                        "/status",
+                        {
+                            method:
+                                "GET",
+
+                            cache:
+                                "no-store"
+                        }
+                    );
+
+
+                if (
+                    !response.ok
+                ) {
+
+                    throw new Error(
+                        "HTTP "
+                        +
+                        response.status
+                    );
+                }
+
+
+                const data =
+                    await response.json();
+
+
+                // ============================================
+                // CONNECTION
+                // ============================================
+
+                setConnectionStatus(
+                    true
+                );
+
+
+                // ============================================
+                // PROBABILITY
+                // ============================================
+
+                updateProbability(
+                    data.probability
+                );
+
+
+                // ============================================
+                // DETECTIONS
+                // ============================================
+
+                updateDetectionCount(
+                    data.detection_count
+                );
+
+
+                // ============================================
+                // LATENCY
+                // ============================================
+
+                updateLatency(
+                    data
+                );
+
+
+                updateLatencyStatus(
+                    data.total_time_ms
+                );
+
+
+                // ============================================
+                // DETECTION STATE
+                // ============================================
+
+                updateDetectionState(
+                    data
+                );
+
+
+                // ============================================
+                // WAVEFORM
+                // ============================================
+
+                if (
+                    Array.isArray(
+                        data.waveform
+                    )
+                ) {
+
+                    drawWaveform(
+                        data.waveform
+                    );
+                }
+
+
+                // ============================================
+                // LOG-MEL
+                // ============================================
+
+                if (
+                    Array.isArray(
+                        data.log_mel
+                    )
+                ) {
+
+                    drawLogMel(
+                        data.log_mel
+                    );
+                }
+
+
+                // ============================================
+                // MFCC
+                // ============================================
+
+                if (
+                    Array.isArray(
+                        data.mfcc
+                    )
+                ) {
+
+                    drawMFCC(
+                        data.mfcc
+                    );
+                }
+
+
+                // ============================================
+                // DETECTION EVENT LOG
+                // ============================================
+
+                const currentCount =
+                    Number(
+                        data.detection_count
+                        || 0
+                    );
+
+
+                if (
+                    currentCount
+                    >
+                    lastDetectionCount
+                ) {
+
+                    console.log(
+                        "================================"
+                    );
+
+                    console.log(
+                        "ALEXA DETECTED"
+                    );
+
+                    console.log(
+                        "Detection count:",
+                        currentCount
+                    );
+
+                    console.log(
+                        "Probability:",
+                        data.probability
+                    );
+
+                    console.log(
+                        "================================"
+                    );
+                }
+
+
+                lastDetectionCount =
+                    currentCount;
+
+
+            } catch (
+                error
+            ) {
+
+                console.error(
+                    "Dashboard error:",
+                    error
+                );
+
+
+                setConnectionStatus(
+                    false
+                );
+            }
+        }
+
+
+        // ====================================================
+        // CANVAS RESIZE
+        // ====================================================
+
+        function resizeCanvases() {
+
+
+            const waveform =
+                el("waveformCanvas");
+
+
+            const logMel =
+                el("logMelCanvas");
+
+
+            const mfcc =
+                el("mfccCanvas");
+
+
+            if (
+                waveform
+            ) {
+
+                waveform.width =
+                    waveform.clientWidth
+                    || 900;
+
+                waveform.height =
+                    waveform.clientHeight
+                    || 215;
+            }
+
+
+            if (
+                logMel
+            ) {
+
+                logMel.width =
+                    logMel.clientWidth
+                    || 900;
+
+                logMel.height =
+                    logMel.clientHeight
+                    || 215;
+            }
+
+
+            if (
+                mfcc
+            ) {
+
+                mfcc.width =
+                    mfcc.clientWidth
+                    || 1800;
+
+                mfcc.height =
+                    mfcc.clientHeight
+                    || 215;
+            }
+        }
+
+
+        // ====================================================
+        // START
+        // ====================================================
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+
+
+                resizeCanvases();
+
+
+                updateDashboard();
+
+
+                setInterval(
+                    updateDashboard,
+                    POLL_INTERVAL
+                );
+
+            }
+        );
+
+
+        // ====================================================
+        // RESIZE
+        // ====================================================
+
+        window.addEventListener(
+            "resize",
+            function () {
+
+                resizeCanvases();
+
+                updateDashboard();
+            }
+        );
+
+
+    </script>
+
+</body>
+
+</html>
