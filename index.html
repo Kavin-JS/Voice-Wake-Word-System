@@ -1,2705 +1,879 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
-    <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <title>
-        Low-Latency Speech Processing
-    </title>
-
-
-    <style>
-
-        /* ======================================================
-           GLOBAL
-           ====================================================== */
-
-        * {
-            box-sizing: border-box;
-        }
-
-
-        body {
-
-            margin: 0;
-
-            min-height: 100vh;
-
-            background:
-                #08111f;
-
-            color:
-                #ffffff;
-
-            font-family:
-                Arial,
-                Helvetica,
-                sans-serif;
-
-            padding:
-                22px 3% 16px;
-        }
-
-
-        /* ======================================================
-           HEADER
-           ====================================================== */
-
-        .header {
-
-            text-align:
-                center;
-
-            margin-bottom:
-                18px;
-        }
-
-
-        .header h1 {
-
-            margin:
-                0;
-
-            font-size:
-                27px;
-
-            font-weight:
-                700;
-        }
-
-
-        .header p {
-
-            margin:
-                4px 0 0;
-
-            color:
-                #29b6ff;
-
-            font-size:
-                14px;
-        }
-
-
-        /* ======================================================
-           TOP STATUS BAR
-           ====================================================== */
-
-        .status-bar {
-
-            width:
-                100%;
-
-            min-height:
-                34px;
-
-            border:
-                1px solid #29415f;
-
-            border-radius:
-                8px;
-
-            background:
-                #101d31;
-
-            display:
-                flex;
-
-            align-items:
-                center;
-
-            justify-content:
-                space-between;
-
-            padding:
-                7px 15px;
-
-            margin-bottom:
-                14px;
-
-            font-size:
-                12px;
-        }
-
-
-        .status-left {
-
-            color:
-                #ffffff;
-        }
-
-
-        .status-left span {
-
-            font-weight:
-                700;
-        }
-
-
-        .connected {
-
-            color:
-                #00ff88;
-        }
-
-
-        .disconnected {
-
-            color:
-                #ff5555;
-        }
-
-
-        .status-center {
-
-            color:
-                #d9e5f2;
-        }
-
-
-        .status-right {
-
-            color:
-                #b9c9da;
-        }
-
-
-        /* ======================================================
-           VISUALIZATION GRID
-           ====================================================== */
-
-        .visual-grid {
-
-            display:
-                grid;
-
-            grid-template-columns:
-                1fr 1fr;
-
-            gap:
-                14px;
-
-            margin-bottom:
-                14px;
-        }
-
-
-        .panel {
-
-            background:
-                #1a293d;
-
-            border:
-                1px solid #2b435f;
-
-            border-radius:
-                11px;
-
-            padding:
-                14px;
-        }
-
-
-        .panel-title {
-
-            font-size:
-                14px;
-
-            font-weight:
-                700;
-
-            margin-bottom:
-                4px;
-
-            color:
-                #ffffff;
-        }
-
-
-        .panel-subtitle {
-
-            font-size:
-                10px;
-
-            color:
-                #7890a8;
-
-            margin-bottom:
-                9px;
-        }
-
-
-        canvas {
-
-            width:
-                100%;
-
-            display:
-                block;
-
-            border-radius:
-                6px;
-
-            background:
-                #020817;
-        }
-
-
-        #waveformCanvas {
-
-            height:
-                215px;
-        }
-
-
-        #logMelCanvas {
-
-            height:
-                215px;
-        }
-
-
-        #mfccCanvas {
-
-            height:
-                215px;
-        }
-
-
-        /* ======================================================
-           MFCC FULL-WIDTH PANEL
-           ====================================================== */
-
-        .mfcc-panel {
-
-            margin-bottom:
-                14px;
-        }
-
-
-        /* ======================================================
-           PIPELINE
-           ====================================================== */
-
-        .pipeline-panel {
-
-            margin-bottom:
-                14px;
-        }
-
-
-        .pipeline-title {
-
-            font-size:
-                14px;
-
-            font-weight:
-                700;
-
-            margin-bottom:
-                12px;
-        }
-
-
-        .pipeline {
-
-            display:
-                flex;
-
-            align-items:
-                center;
-
-            justify-content:
-                center;
-
-            gap:
-                7px;
-
-            flex-wrap:
-                wrap;
-        }
-
-
-        .pipeline-box {
-
-            min-width:
-                102px;
-
-            height:
-                58px;
-
-            border:
-                1px solid #36506d;
-
-            background:
-                #0d1a2d;
-
-            border-radius:
-                7px;
-
-            display:
-                flex;
-
-            flex-direction:
-                column;
-
-            align-items:
-                center;
-
-            justify-content:
-                center;
-
-            text-align:
-                center;
-        }
-
-
-        .pipeline-box strong {
-
-            font-size:
-                11px;
-
-            color:
-                #29b6ff;
-
-            margin-bottom:
-                4px;
-        }
-
-
-        .pipeline-box small {
-
-            font-size:
-                8px;
-
-            color:
-                #8195ab;
-        }
-
-
-        .pipeline-arrow {
-
-            color:
-                #6c8199;
-
-            font-size:
-                19px;
-        }
-
-
-        /* ======================================================
-           PERFORMANCE PANEL
-           ====================================================== */
-
-        .performance-panel {
-
-            background:
-                #1a293d;
-
-            border:
-                1px solid #2b435f;
-
-            border-radius:
-                11px;
-
-            padding:
-                14px;
-        }
-
-
-        .performance-title {
-
-            font-size:
-                14px;
-
-            font-weight:
-                700;
-
-            margin-bottom:
-                12px;
-        }
-
-
-        .metric-grid {
-
-            display:
-                grid;
-
-            grid-template-columns:
-                repeat(4, 1fr);
-
-            gap:
-                9px;
-        }
-
-
-        .metric {
-
-            background:
-                #0b172a;
-
-            border-radius:
-                7px;
-
-            padding:
-                12px 8px;
-
-            text-align:
-                center;
-        }
-
-
-        .metric-label {
-
-            color:
-                #29b6ff;
-
-            font-size:
-                10px;
-
-            margin-bottom:
-                5px;
-        }
-
-
-        .metric-value {
-
-            color:
-                #ffffff;
-
-            font-size:
-                20px;
-
-            font-weight:
-                700;
-        }
-
-
-        #probability {
-
-            transition:
-                color 0.15s ease;
-        }
-
-
-        /* ======================================================
-           CONFIGURATION
-           ====================================================== */
-
-        .config-grid {
-
-            display:
-                grid;
-
-            grid-template-columns:
-                repeat(5, 1fr);
-
-            gap:
-                8px;
-
-            margin-top:
-                9px;
-        }
-
-
-        .config-item {
-
-            background:
-                #0d1a2d;
-
-            border-radius:
-                7px;
-
-            text-align:
-                center;
-
-            padding:
-                8px 5px;
-        }
-
-
-        .config-label {
-
-            color:
-                #7e94aa;
-
-            font-size:
-                9px;
-
-            margin-bottom:
-                3px;
-        }
-
-
-        .config-value {
-
-            color:
-                #ffffff;
-
-            font-size:
-                11px;
-
-            font-weight:
-                700;
-        }
-
-
-        /* ======================================================
-           REPRESENTATION INFO
-           ====================================================== */
-
-        .info-grid {
-
-            display:
-                grid;
-
-            grid-template-columns:
-                1fr 1fr;
-
-            gap:
-                8px;
-
-            margin-top:
-                9px;
-        }
-
-
-        .info-box {
-
-            background:
-                #0d1a2d;
-
-            border-radius:
-                7px;
-
-            padding:
-                9px 11px;
-
-            font-size:
-                9px;
-
-            color:
-                #8da0b5;
-        }
-
-
-        .info-box strong {
-
-            color:
-                #ffffff;
-        }
-
-
-        /* ======================================================
-           DETECTION BANNER
-           ====================================================== */
-
-        #detectionBanner {
-
-            margin-top:
-                10px;
-
-            width:
-                100%;
-
-            min-height:
-                42px;
-
-            border:
-                1px solid #29415f;
-
-            border-radius:
-                7px;
-
-            background:
-                #0d1a2d;
-
-            display:
-                flex;
-
-            align-items:
-                center;
-
-            justify-content:
-                center;
-
-            font-size:
-                15px;
-
-            color:
-                #29b6ff;
-
-            font-weight:
-                600;
-
-            transition:
-                all 0.15s ease;
-        }
-
-
-        /* ======================================================
-           LATENCY STATUS
-           ====================================================== */
-
-        #latencyStatus {
-
-            margin-top:
-                8px;
-
-            width:
-                100%;
-
-            min-height:
-                31px;
-
-            border:
-                1px solid rgba(
-                    0,
-                    255,
-                    136,
-                    0.35
-                );
-
-            border-radius:
-                6px;
-
-            background:
-                rgba(
-                    0,
-                    255,
-                    136,
-                    0.08
-                );
-
-            display:
-                flex;
-
-            align-items:
-                center;
-
-            justify-content:
-                center;
-
-            color:
-                #00ff88;
-
-            font-size:
-                10px;
-
-            font-weight:
-                700;
-        }
-
-
-        /* ======================================================
-           FOOTER
-           ====================================================== */
-
-        .footer {
-
-            text-align:
-                center;
-
-            color:
-                #586d84;
-
-            font-size:
-                9px;
-
-            margin-top:
-                12px;
-        }
-
-
-        /* ======================================================
-           RESPONSIVE
-           ====================================================== */
-
-        @media (
-            max-width: 900px
-        ) {
-
-            .visual-grid {
-
-                grid-template-columns:
-                    1fr;
-            }
-
-
-            .metric-grid {
-
-                grid-template-columns:
-                    repeat(2, 1fr);
-            }
-
-
-            .config-grid {
-
-                grid-template-columns:
-                    repeat(2, 1fr);
-            }
-
-
-            .status-bar {
-
-                flex-direction:
-                    column;
-
-                gap:
-                    5px;
-
-                align-items:
-                    flex-start;
-            }
-        }
-
-
-        @media (
-            max-width: 600px
-        ) {
-
-            body {
-
-                padding:
-                    12px;
-            }
-
-
-            .metric-grid {
-
-                grid-template-columns:
-                    1fr;
-            }
-
-
-            .config-grid {
-
-                grid-template-columns:
-                    1fr;
-            }
-
-
-            .info-grid {
-
-                grid-template-columns:
-                    1fr;
-            }
-
-
-            .pipeline-arrow {
-
-                display:
-                    none;
-            }
-        }
-
-    </style>
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ASTRA · Voice Activation System</title>
+
+<style>
+
+    /* ==========================================================
+       TOKENS
+       ========================================================== */
+
+    :root {
+        --ink:        #05080d;
+        --surface:    #0e151f;
+        --surface-2:  #0a1119;
+        --border:     #1d2b3a;
+        --border-lit: #2a4258;
+
+        --text:       #e8eef4;
+        --text-dim:   #7c8ba0;
+        --text-faint: #4c5a6b;
+
+        --system:     #4f9dde;   /* idle / structural accent */
+        --system-dim: rgba(79, 157, 222, 0.14);
+
+        --live:       #34d399;   /* detection / active accent */
+        --live-dim:   rgba(52, 211, 153, 0.14);
+
+        --warn:       #e0a63e;
+        --danger:     #e05a5a;
+
+        --font-ui:   -apple-system, "Segoe UI", "IBM Plex Sans", system-ui, sans-serif;
+        --font-data: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+        margin: 0;
+        min-height: 100vh;
+        background: var(--ink);
+        background-image:
+            radial-gradient(circle at 12% 0%, rgba(79,157,222,0.07), transparent 45%),
+            radial-gradient(circle at 88% 8%, rgba(52,211,153,0.05), transparent 40%);
+        color: var(--text);
+        font-family: var(--font-ui);
+        padding: 28px clamp(16px, 3vw, 40px) 24px;
+    }
+
+    /* ==========================================================
+       HEADER
+       ========================================================== */
+
+    .header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .header-title h1 {
+        margin: 0;
+        font-size: 22px;
+        font-weight: 600;
+        letter-spacing: 0.2px;
+    }
+
+    .header-title p {
+        margin: 4px 0 0;
+        font-size: 13px;
+        color: var(--text-dim);
+    }
+
+    .header-meta {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        font-family: var(--font-data);
+        font-size: 12px;
+        color: var(--text-dim);
+    }
+
+    .conn-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 11px;
+        border-radius: 20px;
+        border: 1px solid var(--border);
+        background: var(--surface);
+    }
+
+    .conn-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--text-faint);
+    }
+
+    .conn-pill.connected .conn-dot { background: var(--live); box-shadow: 0 0 6px var(--live); }
+    .conn-pill.connected { color: var(--live); border-color: rgba(52,211,153,0.3); }
+    .conn-pill.disconnected .conn-dot { background: var(--danger); box-shadow: 0 0 6px var(--danger); }
+    .conn-pill.disconnected { color: var(--danger); border-color: rgba(224,90,90,0.3); }
+
+    /* ==========================================================
+       LED / ACTIVITY CARD  (hero — controlled by data.detected)
+       ========================================================== */
+
+    .led-card {
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        background: var(--surface);
+        padding: 26px 20px 22px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 16px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .led-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at 50% -10%, rgba(79,157,222,0.10), transparent 60%);
+        pointer-events: none;
+        transition: background 0.4s ease;
+    }
+
+    .led-card.on::before {
+        background: radial-gradient(circle at 50% -10%, rgba(52,211,153,0.16), transparent 60%);
+    }
+
+    .led-eyebrow {
+        font-size: 11px;
+        letter-spacing: 0.6px;
+        color: var(--text-faint);
+        margin-bottom: 14px;
+    }
+
+    .led-orb {
+        width: 92px;
+        height: 92px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 30%, #2a3a4a, #131c26 70%);
+        border: 1px solid #263748;
+        box-shadow:
+            inset 0 0 14px rgba(0,0,0,0.5),
+            0 0 0 rgba(0,0,0,0);
+        transition: background 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
+        margin-bottom: 16px;
+    }
+
+    .led-orb.on {
+        background: radial-gradient(circle at 35% 30%, #5be8ae, var(--live) 70%);
+        border-color: rgba(52,211,153,0.6);
+        animation: ledPulse 1.1s ease-in-out infinite;
+    }
+
+    @keyframes ledPulse {
+        0%   { box-shadow: inset 0 0 10px rgba(0,60,40,0.4), 0 0 22px rgba(52,211,153,0.55), 0 0 46px rgba(52,211,153,0.22); }
+        50%  { box-shadow: inset 0 0 10px rgba(0,60,40,0.4), 0 0 34px rgba(52,211,153,0.85), 0 0 68px rgba(52,211,153,0.35); }
+        100% { box-shadow: inset 0 0 10px rgba(0,60,40,0.4), 0 0 22px rgba(52,211,153,0.55), 0 0 46px rgba(52,211,153,0.22); }
+    }
+
+    .led-state {
+        font-size: 18px;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+        color: var(--text-dim);
+        transition: color 0.3s ease;
+    }
+
+    .led-card.on .led-state { color: var(--live); }
+
+    .led-sub {
+        margin-top: 4px;
+        font-family: var(--font-data);
+        font-size: 11.5px;
+        color: var(--text-faint);
+    }
+
+    /* ==========================================================
+       STAT STRIP
+       ========================================================== */
+
+    .stat-strip {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        margin-bottom: 16px;
+    }
+
+    .stat {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: var(--surface);
+        padding: 12px 14px;
+    }
+
+    .stat-label {
+        font-size: 10.5px;
+        color: var(--text-dim);
+        margin-bottom: 6px;
+    }
+
+    .stat-value {
+        font-family: var(--font-data);
+        font-size: 17px;
+        font-weight: 600;
+        color: var(--text);
+        transition: color 0.15s ease;
+    }
+
+    /* ==========================================================
+       PANELS / VISUALIZATION
+       ========================================================== */
+
+    .visual-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        margin-bottom: 14px;
+    }
+
+    .panel {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 16px;
+    }
+
+    .panel-title {
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 2px;
+    }
+
+    .panel-subtitle {
+        font-size: 11px;
+        color: var(--text-dim);
+        margin-bottom: 10px;
+    }
+
+    canvas {
+        width: 100%;
+        display: block;
+        border-radius: 8px;
+        background: var(--surface-2);
+    }
+
+    #waveformCanvas, #logMelCanvas, #mfccCanvas { height: 200px; }
+
+    .mfcc-panel { margin-bottom: 14px; }
+
+    /* ==========================================================
+       PIPELINE
+       ========================================================== */
+
+    .pipeline-panel { margin-bottom: 14px; }
+
+    .pipeline-title {
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 12px;
+    }
+
+    .pipeline {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    .pipeline-box {
+        min-width: 96px;
+        padding: 10px 8px;
+        border: 1px solid var(--border);
+        background: var(--surface-2);
+        border-radius: 8px;
+        text-align: center;
+    }
+
+    .pipeline-box strong {
+        display: block;
+        font-size: 10.5px;
+        letter-spacing: 0.3px;
+        color: var(--system);
+        margin-bottom: 3px;
+    }
+
+    .pipeline-box small {
+        font-size: 8.5px;
+        color: var(--text-dim);
+    }
+
+    .pipeline-box.terminus strong { color: var(--live); }
+
+    .pipeline-arrow {
+        color: var(--text-faint);
+        font-size: 16px;
+    }
+
+    /* ==========================================================
+       PERFORMANCE
+       ========================================================== */
+
+    .performance-panel {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 16px;
+    }
+
+    .performance-title {
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 12px;
+    }
+
+    .metric-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 9px;
+        margin-bottom: 12px;
+    }
+
+    .metric {
+        background: var(--surface-2);
+        border-radius: 8px;
+        padding: 12px 8px;
+        text-align: center;
+    }
+
+    .metric-label {
+        color: var(--system);
+        font-size: 10px;
+        margin-bottom: 5px;
+    }
+
+    .metric-value {
+        font-family: var(--font-data);
+        color: var(--text);
+        font-size: 18px;
+        font-weight: 600;
+        transition: color 0.15s ease;
+    }
+
+    .config-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .config-item {
+        background: var(--surface-2);
+        border-radius: 8px;
+        text-align: center;
+        padding: 8px 5px;
+    }
+
+    .config-label {
+        color: var(--text-dim);
+        font-size: 9px;
+        margin-bottom: 3px;
+    }
+
+    .config-value {
+        font-family: var(--font-data);
+        color: var(--text);
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    .info-box {
+        background: var(--surface-2);
+        border-radius: 8px;
+        padding: 9px 12px;
+        font-size: 11px;
+        color: var(--text-dim);
+    }
+
+    .info-box strong { color: var(--text); }
+
+    /* ==========================================================
+       FOOTER
+       ========================================================== */
+
+    .footer {
+        text-align: center;
+        color: var(--text-faint);
+        font-family: var(--font-data);
+        font-size: 10.5px;
+        margin-top: 16px;
+    }
+
+    /* ==========================================================
+       RESPONSIVE
+       ========================================================== */
+
+    @media (max-width: 900px) {
+        .visual-grid { grid-template-columns: 1fr; }
+        .stat-strip { grid-template-columns: repeat(2, 1fr); }
+        .metric-grid { grid-template-columns: repeat(2, 1fr); }
+        .config-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 600px) {
+        .info-grid { grid-template-columns: 1fr; }
+        .pipeline-arrow { display: none; }
+    }
+
+</style>
 </head>
-
-
 <body>
 
-
-    <!-- ======================================================
+    <!-- ================================================================
          HEADER
-         ====================================================== -->
+         ================================================================ -->
 
     <div class="header">
-
-        <h1>
-            Low-Latency Speech Processing
-        </h1>
-
-        <p>
-            Real-Time Log-Mel &amp; MFCC Spectral Analysis
-            &amp; Wake-Word Inference
-        </p>
-
-    </div>
-
-
-    <!-- ======================================================
-         STATUS BAR
-         ====================================================== -->
-
-    <div class="status-bar">
-
-        <div class="status-left">
-
-            System:
-
-            <span
-                id="connectionStatus"
-                class="connected"
-            >
-                ● CONNECTING
+        <div class="header-title">
+            <h1>ASTRA · Voice Activation System</h1>
+            <p>Offline wake-word detection &amp; real-time signal analysis</p>
+        </div>
+        <div class="header-meta">
+            <span id="clock">--:--:--</span>
+            <span class="conn-pill disconnected" id="connPill">
+                <span class="conn-dot"></span>
+                <span id="connText">CONNECTING</span>
             </span>
-
         </div>
-
-
-        <div class="status-center">
-
-            Processing:
-
-            <strong>
-                REAL-TIME PROCESSING
-            </strong>
-
-        </div>
-
-
-        <div class="status-right">
-
-            Detections:
-
-            <strong id="detectionCount">
-                0
-            </strong>
-
-        </div>
-
     </div>
 
+    <!-- ================================================================
+         LED / ACTIVITY INDICATOR — driven only by data.detected
+         ================================================================ -->
 
-    <!-- ======================================================
-         RAW AUDIO + LOG-MEL
-         ====================================================== -->
+    <div class="led-card" id="ledCard">
+        <div class="led-eyebrow">ACTIVITY INDICATOR</div>
+        <div class="led-orb" id="ledOrb"></div>
+        <div class="led-state" id="ledState">LISTENING</div>
+        <div class="led-sub" id="ledSub">Confidence 0.000 · 0 detections</div>
+    </div>
+
+    <!-- ================================================================
+         STAT STRIP
+         ================================================================ -->
+
+    <div class="stat-strip">
+        <div class="stat">
+            <div class="stat-label">Wake Phrase</div>
+            <div class="stat-value" style="font-size:14px;">"hey astra"</div>
+        </div>
+        <div class="stat">
+            <div class="stat-label">Engine</div>
+            <div class="stat-value" style="font-size:14px;">Vosk (offline)</div>
+        </div>
+        <div class="stat">
+            <div class="stat-label">Detections</div>
+            <div class="stat-value" id="detectionCount">0</div>
+        </div>
+        <div class="stat">
+            <div class="stat-label">Last Detection</div>
+            <div class="stat-value" id="lastDetection" style="font-size:14px;">—</div>
+        </div>
+    </div>
+
+    <!-- ================================================================
+         WAVEFORM + LOG-MEL
+         ================================================================ -->
 
     <div class="visual-grid">
 
-
-        <!-- RAW WAVEFORM -->
-
         <div class="panel">
-
-            <div class="panel-title">
-                Raw Audio Signal
-            </div>
-
-            <div class="panel-subtitle">
-                16 kHz microphone waveform
-            </div>
-
-            <canvas
-                id="waveformCanvas"
-                width="900"
-                height="215"
-            ></canvas>
-
+            <div class="panel-title">Raw Audio Signal</div>
+            <div class="panel-subtitle">16 kHz microphone waveform</div>
+            <canvas id="waveformCanvas" width="900" height="200"></canvas>
         </div>
 
-
-        <!-- LOG-MEL -->
-
         <div class="panel">
-
-            <div class="panel-title">
-                Log-Mel Spectrogram
-            </div>
-
-            <div class="panel-subtitle">
-                40 Mel bands · 300–3400 Hz ·
-                time-frequency representation
-            </div>
-
-            <canvas
-                id="logMelCanvas"
-                width="900"
-                height="215"
-            ></canvas>
-
+            <div class="panel-title">Log-Mel Spectrogram</div>
+            <div class="panel-subtitle">40 Mel bands · 300–3400 Hz</div>
+            <canvas id="logMelCanvas" width="900" height="200"></canvas>
         </div>
 
     </div>
 
-
-    <!-- ======================================================
+    <!-- ================================================================
          MFCC
-         ====================================================== -->
+         ================================================================ -->
 
     <div class="panel mfcc-panel">
-
-        <div class="panel-title">
-            MFCC Spectrum
-        </div>
-
-        <div class="panel-subtitle">
-            13 Mel-Frequency Cepstral Coefficients ·
-            compact speech representation
-        </div>
-
-        <canvas
-            id="mfccCanvas"
-            width="1800"
-            height="215"
-        ></canvas>
-
+        <div class="panel-title">MFCC Spectrum</div>
+        <div class="panel-subtitle">13 Mel-Frequency Cepstral Coefficients · compact speech representation</div>
+        <canvas id="mfccCanvas" width="1800" height="200"></canvas>
     </div>
 
-
-    <!-- ======================================================
-         SIGNAL PROCESSING PIPELINE
-         ====================================================== -->
+    <!-- ================================================================
+         PIPELINE
+         ================================================================ -->
 
     <div class="panel pipeline-panel">
-
-        <div class="pipeline-title">
-            Signal Processing Pipeline
-        </div>
-
-
+        <div class="pipeline-title">Signal Processing Pipeline</div>
         <div class="pipeline">
-
-
-            <div class="pipeline-box">
-
-                <strong>
-                    MICROPHONE
-                </strong>
-
-                <small>
-                    Raw Audio
-                </small>
-
-            </div>
-
-
-            <div class="pipeline-arrow">
-                →
-            </div>
-
-
-            <div class="pipeline-box">
-
-                <strong>
-                    PREPROCESS
-                </strong>
-
-                <small>
-                    Filter + Enhance
-                </small>
-
-            </div>
-
-
-            <div class="pipeline-arrow">
-                →
-            </div>
-
-
-            <div class="pipeline-box">
-
-                <strong>
-                    FRAMING
-                </strong>
-
-                <small>
-                    25 ms / 10 ms
-                </small>
-
-            </div>
-
-
-            <div class="pipeline-arrow">
-                →
-            </div>
-
-
-            <div class="pipeline-box">
-
-                <strong>
-                    STFT / FFT
-                </strong>
-
-                <small>
-                    Time → Frequency
-                </small>
-
-            </div>
-
-
-            <div class="pipeline-arrow">
-                →
-            </div>
-
-
-            <div class="pipeline-box">
-
-                <strong>
-                    MEL FILTER
-                </strong>
-
-                <small>
-                    40 Bands
-                </small>
-
-            </div>
-
-
-            <div class="pipeline-arrow">
-                →
-            </div>
-
-
-            <div class="pipeline-box">
-
-                <strong>
-                    LOG
-                </strong>
-
-                <small>
-                    Compression
-                </small>
-
-            </div>
-
-
-            <div class="pipeline-arrow">
-                →
-            </div>
-
-
-            <div class="pipeline-box">
-
-                <strong>
-                    MFCC
-                </strong>
-
-                <small>
-                    13 Coefficients
-                </small>
-
-            </div>
-
-
-            <div class="pipeline-arrow">
-                →
-            </div>
-
-
-            <div class="pipeline-box">
-
-                <strong>
-                    WAKE MODEL
-                </strong>
-
-                <small>
-                    Alexa
-                </small>
-
-            </div>
-
+            <div class="pipeline-box"><strong>MICROPHONE</strong><small>Raw Audio</small></div>
+            <div class="pipeline-arrow">→</div>
+            <div class="pipeline-box"><strong>PREPROCESS</strong><small>Filter + Enhance</small></div>
+            <div class="pipeline-arrow">→</div>
+            <div class="pipeline-box"><strong>FRAMING</strong><small>25 ms / 10 ms</small></div>
+            <div class="pipeline-arrow">→</div>
+            <div class="pipeline-box"><strong>STFT / FFT</strong><small>Time → Frequency</small></div>
+            <div class="pipeline-arrow">→</div>
+            <div class="pipeline-box"><strong>MEL FILTER</strong><small>40 Bands</small></div>
+            <div class="pipeline-arrow">→</div>
+            <div class="pipeline-box"><strong>LOG</strong><small>Compression</small></div>
+            <div class="pipeline-arrow">→</div>
+            <div class="pipeline-box"><strong>MFCC</strong><small>13 Coefficients</small></div>
+            <div class="pipeline-arrow">→</div>
+            <div class="pipeline-box terminus"><strong>ASR MATCH</strong><small>"astra" grammar</small></div>
         </div>
-
     </div>
 
-
-    <!-- ======================================================
+    <!-- ================================================================
          PERFORMANCE
-         ====================================================== -->
+         ================================================================ -->
 
     <div class="performance-panel">
 
-
-        <div class="performance-title">
-            Processing Performance
-        </div>
-
-
-        <!-- ==================================================
-             MAIN METRICS
-             ================================================== -->
+        <div class="performance-title">Processing Performance</div>
 
         <div class="metric-grid">
-
-
             <div class="metric">
-
-                <div class="metric-label">
-                    DSP + Log-Mel
-                </div>
-
-                <div
-                    class="metric-value"
-                    id="featureTime"
-                >
-                    0.00 ms
-                </div>
-
+                <div class="metric-label">DSP + Log-Mel</div>
+                <div class="metric-value" id="featureTime">0.00 ms</div>
             </div>
-
-
             <div class="metric">
-
-                <div class="metric-label">
-                    Model Inference
-                </div>
-
-                <div
-                    class="metric-value"
-                    id="inferenceTime"
-                >
-                    0.00 ms
-                </div>
-
+                <div class="metric-label">Recognition</div>
+                <div class="metric-value" id="inferenceTime">0.00 ms</div>
             </div>
-
-
             <div class="metric">
-
-                <div class="metric-label">
-                    Computational Latency
-                </div>
-
-                <div
-                    class="metric-value"
-                    id="totalTime"
-                >
-                    0.00 ms
-                </div>
-
+                <div class="metric-label">Total Latency</div>
+                <div class="metric-value" id="totalTime">0.00 ms</div>
             </div>
-
-
             <div class="metric">
-
-                <div class="metric-label">
-                    Wake Word Probability
-                </div>
-
-                <div
-                    class="metric-value"
-                    id="probability"
-                >
-                    0.000
-                </div>
-
+                <div class="metric-label">Confidence</div>
+                <div class="metric-value" id="probability">0.000</div>
             </div>
-
         </div>
-
-
-        <!-- ==================================================
-             CONFIGURATION
-             ================================================== -->
 
         <div class="config-grid">
-
-
             <div class="config-item">
-
-                <div class="config-label">
-                    Sample Rate
-                </div>
-
-                <div class="config-value">
-                    16 kHz
-                </div>
-
+                <div class="config-label">Sample Rate</div>
+                <div class="config-value">16 kHz</div>
             </div>
-
-
             <div class="config-item">
-
-                <div class="config-label">
-                    Frame Size
-                </div>
-
-                <div class="config-value">
-                    25 ms
-                </div>
-
+                <div class="config-label">Frame Size</div>
+                <div class="config-value">25 ms</div>
             </div>
-
-
             <div class="config-item">
-
-                <div class="config-label">
-                    Frame Step
-                </div>
-
-                <div class="config-value">
-                    10 ms
-                </div>
-
+                <div class="config-label">Frame Step</div>
+                <div class="config-value">10 ms</div>
             </div>
-
-
             <div class="config-item">
-
-                <div class="config-label">
-                    Mel Filters
-                </div>
-
-                <div class="config-value">
-                    40
-                </div>
-
+                <div class="config-label">Mel Filters</div>
+                <div class="config-value">40</div>
             </div>
-
-
             <div class="config-item">
-
-                <div class="config-label">
-                    MFCC
-                </div>
-
-                <div class="config-value">
-                    13
-                </div>
-
+                <div class="config-label">MFCC</div>
+                <div class="config-value">13</div>
             </div>
-
         </div>
-
-
-        <!-- ==================================================
-             INFORMATION
-             ================================================== -->
 
         <div class="info-grid">
-
-
-            <div class="info-box">
-
-                Log-Mel:
-
-                <strong>
-                    Time-Frequency Speech Representation
-                </strong>
-
-            </div>
-
-
-            <div class="info-box">
-
-                MFCC:
-
-                <strong>
-                    Compact Cepstral Speech Features
-                </strong>
-
-            </div>
-
-
-            <div class="info-box">
-
-                Inference:
-
-                <strong>
-                    Streaming Micro-Wake-Word Model
-                </strong>
-
-            </div>
-
-
-            <div class="info-box">
-
-                Wake Threshold:
-
-                <strong>
-                    0.66
-                </strong>
-
-            </div>
-
+            <div class="info-box">Log-Mel: <strong>Time-Frequency Speech Representation</strong></div>
+            <div class="info-box">MFCC: <strong>Compact Cepstral Speech Features</strong></div>
+            <div class="info-box">Recognition: <strong>Offline Vosk ASR, Grammar-Restricted</strong></div>
+            <div class="info-box">Cooldown: <strong>2.0 s Between Detections</strong></div>
         </div>
-
-
-        <!-- ==================================================
-             DETECTION BANNER
-             ================================================== -->
-
-        <div id="detectionBanner">
-
-            ● SIGNAL PROCESSING
-
-        </div>
-
-
-        <!-- ==================================================
-             LATENCY STATUS
-             ================================================== -->
-
-        <div id="latencyStatus">
-
-            COMPUTATIONAL PROCESSING
-
-        </div>
-
 
     </div>
-
-
-    <!-- ======================================================
-         FOOTER
-         ====================================================== -->
 
     <div class="footer">
-
-        Real-time microphone
-        →
-        DSP preprocessing
-        →
-        FFT
-        →
-        Log-Mel
-        →
-        MFCC analysis
-        →
-        streaming wake-word inference
-
+        Microphone → DSP preprocessing → FFT → Log-Mel → MFCC → offline speech recognition → wake-word match
     </div>
 
-
-    <!-- ======================================================
+    <!-- ================================================================
          JAVASCRIPT
-         ====================================================== -->
+         ================================================================ -->
 
     <script>
 
-
-        // ====================================================
-        // SETTINGS
-        // ====================================================
-
         const POLL_INTERVAL = 100;
-
-        const WAKE_THRESHOLD = 0.66;
-
         let lastDetectionCount = 0;
 
+        function el(id) { return document.getElementById(id); }
 
-        // ====================================================
-        // ELEMENT HELPER
-        // ====================================================
+        // --------------------------------------------------------------
+        // CLOCK
+        // --------------------------------------------------------------
 
-        function el(id) {
-
-            return document.getElementById(id);
+        function tickClock() {
+            el("clock").textContent = new Date().toLocaleTimeString([], { hour12: false });
         }
+        setInterval(tickClock, 1000);
+        tickClock();
 
+        // --------------------------------------------------------------
+        // CONNECTION
+        // --------------------------------------------------------------
 
-        // ====================================================
-        // CONNECTION STATUS
-        // ====================================================
-
-        function setConnectionStatus(
-            connected
-        ) {
-
-            const element =
-                el("connectionStatus");
-
-
-            if (!element) {
-                return;
-            }
-
+        function setConnectionStatus(connected) {
+            const pill = el("connPill");
+            const text = el("connText");
+            if (!pill || !text) return;
 
             if (connected) {
-
-                element.innerHTML =
-                    "● CONNECTED";
-
-                element.className =
-                    "connected";
-
+                pill.className = "conn-pill connected";
+                text.textContent = "CONNECTED";
             } else {
-
-                element.innerHTML =
-                    "● DISCONNECTED";
-
-                element.className =
-                    "disconnected";
+                pill.className = "conn-pill disconnected";
+                text.textContent = "DISCONNECTED";
             }
         }
 
+        // --------------------------------------------------------------
+        // PROBABILITY / CONFIDENCE
+        // --------------------------------------------------------------
 
-        // ====================================================
-        // PROBABILITY
-        // ====================================================
-
-        function updateProbability(
-            probability
-        ) {
-
-            const element =
-                el("probability");
-
-
-            if (!element) {
-                return;
-            }
-
-
-            const value =
-                Number(
-                    probability || 0
-                );
-
-
-            element.textContent =
-                value.toFixed(3);
-
-
-            if (
-                value >= WAKE_THRESHOLD
-            ) {
-
-                element.style.color =
-                    "#00ff88";
-
-            } else {
-
-                element.style.color =
-                    "#ffffff";
-            }
+        function updateProbability(probability) {
+            const element = el("probability");
+            if (!element) return;
+            const value = Number(probability || 0);
+            element.textContent = value.toFixed(3);
+            element.style.color = value > 0 ? "#34d399" : "#e8eef4";
         }
 
-
-        // ====================================================
+        // --------------------------------------------------------------
         // DETECTION COUNT
-        // ====================================================
+        // --------------------------------------------------------------
 
-        function updateDetectionCount(
-            count
-        ) {
-
-            const element =
-                el("detectionCount");
-
-
-            if (!element) {
-                return;
-            }
-
-
-            element.textContent =
-                Number(
-                    count || 0
-                );
+        function updateDetectionCount(count) {
+            const element = el("detectionCount");
+            if (!element) return;
+            element.textContent = Number(count || 0);
         }
 
-
-        // ====================================================
+        // --------------------------------------------------------------
         // LATENCY
-        // ====================================================
+        // --------------------------------------------------------------
 
         function formatMs(value) {
-
-            return (
-                Number(
-                    value || 0
-                ).toFixed(2)
-                + " ms"
-            );
+            return Number(value || 0).toFixed(2) + " ms";
         }
 
-
-        function updateLatency(
-            data
-        ) {
-
-            const featureElement =
-                el("featureTime");
-
-
-            const inferenceElement =
-                el("inferenceTime");
-
-
-            const totalElement =
-                el("totalTime");
-
-
-            if (featureElement) {
-
-                featureElement.textContent =
-                    formatMs(
-                        data.feature_time_ms
-                    );
-            }
-
-
-            if (inferenceElement) {
-
-                inferenceElement.textContent =
-                    formatMs(
-                        data.inference_time_ms
-                    );
-            }
-
-
-            if (totalElement) {
-
-                totalElement.textContent =
-                    formatMs(
-                        data.total_time_ms
-                    );
-            }
+        function updateLatency(data) {
+            const f = el("featureTime");
+            const i = el("inferenceTime");
+            const t = el("totalTime");
+            if (f) f.textContent = formatMs(data.feature_time_ms);
+            if (i) i.textContent = formatMs(data.inference_time_ms);
+            if (t) t.textContent = formatMs(data.total_time_ms);
         }
 
+        // --------------------------------------------------------------
+        // LAST DETECTION TIMESTAMP
+        // --------------------------------------------------------------
 
-        // ====================================================
-        // LATENCY STATUS
-        // ====================================================
-
-        function updateLatencyStatus(
-            totalTime
-        ) {
-
-            const element =
-                el("latencyStatus");
-
-
-            if (!element) {
+        function updateLastDetection(epochSeconds) {
+            const element = el("lastDetection");
+            if (!element) return;
+            const value = Number(epochSeconds || 0);
+            if (value <= 0) {
+                element.textContent = "—";
                 return;
             }
-
-
-            const value =
-                Number(
-                    totalTime || 0
-                );
-
-
-            if (
-                value < 1.0
-            ) {
-
-                element.textContent =
-                    "VERY LOW-LATENCY COMPUTATIONAL PROCESSING · "
-                    + value.toFixed(2)
-                    + " ms";
-
-            } else if (
-                value < 5.0
-            ) {
-
-                element.textContent =
-                    "LOW-LATENCY COMPUTATIONAL PROCESSING · "
-                    + value.toFixed(2)
-                    + " ms";
-
-            } else {
-
-                element.textContent =
-                    "COMPUTATIONAL PROCESSING · "
-                    + value.toFixed(2)
-                    + " ms";
-            }
+            element.textContent = new Date(value * 1000).toLocaleTimeString([], { hour12: false });
         }
 
+        // --------------------------------------------------------------
+        // VIRTUAL LED — the ONLY thing that decides this is data.detected
+        // from the backend. No local/faked detection state.
+        // --------------------------------------------------------------
 
-        // ====================================================
-        // DETECTION BANNER
-        // ====================================================
+        function updateLed(data) {
+            const card  = el("ledCard");
+            const orb   = el("ledOrb");
+            const state = el("ledState");
+            const sub   = el("ledSub");
+            if (!card || !orb || !state || !sub) return;
 
-        function updateDetectionState(
-            data
-        ) {
+            const isDetected = data.detected === true;
+            const confidence = Number(data.probability || 0).toFixed(3);
+            const count = Number(data.detection_count || 0);
 
-            const banner =
-                el("detectionBanner");
-
-
-            if (!banner) {
-                return;
-            }
-
-
-            const probability =
-                Number(
-                    data.probability || 0
-                );
-
-
-            const detected =
-                data.detected === true;
-
-
-            if (
-                detected ||
-                probability >= WAKE_THRESHOLD
-            ) {
-
-                banner.textContent =
-                    "● ALEXA DETECTED";
-
-
-                banner.style.color =
-                    "#00ff88";
-
-
-                banner.style.background =
-                    "rgba(0,255,136,0.10)";
-
-
-                banner.style.border =
-                    "1px solid rgba(0,255,136,0.50)";
-
-
-                banner.style.fontWeight =
-                    "700";
-
-            } else {
-
-                banner.textContent =
-                    "● SIGNAL PROCESSING";
-
-
-                banner.style.color =
-                    "#29b6ff";
-
-
-                banner.style.background =
-                    "#0d1a2d";
-
-
-                banner.style.border =
-                    "1px solid #29415f";
-
-
-                banner.style.fontWeight =
-                    "600";
-            }
+            card.classList.toggle("on", isDetected);
+            orb.classList.toggle("on", isDetected);
+            state.textContent = isDetected ? "ASTRA DETECTED" : "LISTENING";
+            sub.textContent = `Confidence ${confidence} · ${count} detection${count === 1 ? "" : "s"}`;
         }
 
-
-        // ====================================================
+        // --------------------------------------------------------------
         // WAVEFORM
-        // ====================================================
+        // --------------------------------------------------------------
 
-        function drawWaveform(
-            samples
-        ) {
+        function drawWaveform(samples) {
+            const canvas = el("waveformCanvas");
+            if (!canvas || !samples || samples.length === 0) return;
 
-            const canvas =
-                el("waveformCanvas");
+            const ctx = canvas.getContext("2d");
+            const width = canvas.width;
+            const height = canvas.height;
 
+            ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = "#0a1119";
+            ctx.fillRect(0, 0, width, height);
 
-            if (
-                !canvas ||
-                !samples ||
-                samples.length === 0
-            ) {
-                return;
-            }
-
-
-            const ctx =
-                canvas.getContext("2d");
-
-
-            const width =
-                canvas.width;
-
-            const height =
-                canvas.height;
-
-
-            ctx.clearRect(
-                0,
-                0,
-                width,
-                height
-            );
-
-
-            // ------------------------------------------------
-            // Background
-            // ------------------------------------------------
-
-            ctx.fillStyle =
-                "#020817";
-
-            ctx.fillRect(
-                0,
-                0,
-                width,
-                height
-            );
-
-
-            // ------------------------------------------------
-            // Grid
-            // ------------------------------------------------
-
-            ctx.strokeStyle =
-                "rgba(100,150,200,0.12)";
-
+            ctx.strokeStyle = "rgba(100,150,200,0.10)";
             ctx.lineWidth = 1;
-
-
-            for (
-                let i = 1;
-                i < 5;
-                i++
-            ) {
-
-                const y =
-                    height * i / 5;
-
-
+            for (let i = 1; i < 5; i++) {
+                const y = height * i / 5;
                 ctx.beginPath();
-
-                ctx.moveTo(
-                    0,
-                    y
-                );
-
-                ctx.lineTo(
-                    width,
-                    y
-                );
-
+                ctx.moveTo(0, y);
+                ctx.lineTo(width, y);
                 ctx.stroke();
             }
 
-
-            // ------------------------------------------------
-            // Center line
-            // ------------------------------------------------
-
-            ctx.strokeStyle =
-                "rgba(100,180,230,0.22)";
-
-
+            ctx.strokeStyle = "rgba(100,180,230,0.20)";
             ctx.beginPath();
-
-            ctx.moveTo(
-                0,
-                height / 2
-            );
-
-            ctx.lineTo(
-                width,
-                height / 2
-            );
-
+            ctx.moveTo(0, height / 2);
+            ctx.lineTo(width, height / 2);
             ctx.stroke();
 
-
-            // ------------------------------------------------
-            // Waveform
-            // ------------------------------------------------
-
-            ctx.strokeStyle =
-                "#29b6ff";
-
-            ctx.lineWidth =
-                2;
-
-
+            ctx.strokeStyle = "#4f9dde";
+            ctx.lineWidth = 1.5;
             ctx.beginPath();
 
+            const step = width / samples.length;
+            const scale = height * 0.42;
 
-            const step =
-                width
-                /
-                Math.max(
-                    1,
-                    samples.length - 1
-                );
-
-
-            for (
-                let i = 0;
-                i < samples.length;
-                i++
-            ) {
-
-                let sample =
-                    Number(
-                        samples[i]
-                    );
-
-
-                sample =
-                    Math.max(
-                        -1,
-                        Math.min(
-                            1,
-                            sample
-                        )
-                    );
-
-
-                const x =
-                    i * step;
-
-
-                const y =
-                    height / 2
-                    -
-                    (
-                        sample
-                        * height
-                        * 0.42
-                    );
-
-
-                if (
-                    i === 0
-                ) {
-
-                    ctx.moveTo(
-                        x,
-                        y
-                    );
-
-                } else {
-
-                    ctx.lineTo(
-                        x,
-                        y
-                    );
-                }
+            for (let i = 0; i < samples.length; i++) {
+                const x = i * step;
+                const y = (height / 2) - (Number(samples[i]) * scale);
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
             }
-
-
             ctx.stroke();
         }
 
+        // --------------------------------------------------------------
+        // HEATMAPS (LOG-MEL / MFCC)
+        // --------------------------------------------------------------
 
-        // ====================================================
-        // HEATMAP COLOR
-        // ====================================================
+        function drawHeatmap(canvasId, matrix, topLabel, bottomLabel) {
+            const canvas = el(canvasId);
+            if (!canvas || !matrix || matrix.length === 0) return;
 
-        function heatColor(
-            value,
-            min,
-            max
-        ) {
+            const ctx = canvas.getContext("2d");
+            const width = canvas.width;
+            const height = canvas.height;
 
-            if (
-                max <= min
-            ) {
+            ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = "#0a1119";
+            ctx.fillRect(0, 0, width, height);
 
-                return "rgb(0,120,200)";
-            }
+            const rows = matrix.length;
+            const cols = matrix[0].length || 1;
 
-
-            let normalized =
-                (
-                    value - min
-                )
-                /
-                (
-                    max - min
-                );
-
-
-            normalized =
-                Math.max(
-                    0,
-                    Math.min(
-                        1,
-                        normalized
-                    )
-                );
-
-
-            let r;
-            let g;
-            let b;
-
-
-            // ------------------------------------------------
-            // 0.00 - 0.25
-            // Dark blue → blue
-            // ------------------------------------------------
-
-            if (
-                normalized < 0.25
-            ) {
-
-                const t =
-                    normalized / 0.25;
-
-
-                r = 0;
-
-                g =
-                    Math.round(
-                        30 + 80 * t
-                    );
-
-                b =
-                    Math.round(
-                        90 + 165 * t
-                    );
-            }
-
-
-            // ------------------------------------------------
-            // 0.25 - 0.50
-            // Blue → cyan
-            // ------------------------------------------------
-
-            else if (
-                normalized < 0.50
-            ) {
-
-                const t =
-                    (
-                        normalized
-                        - 0.25
-                    )
-                    /
-                    0.25;
-
-
-                r = 0;
-
-                g =
-                    Math.round(
-                        110 + 145 * t
-                    );
-
-                b =
-                    Math.round(
-                        255 - 30 * t
-                    );
-            }
-
-
-            // ------------------------------------------------
-            // 0.50 - 0.75
-            // Cyan → yellow
-            // ------------------------------------------------
-
-            else if (
-                normalized < 0.75
-            ) {
-
-                const t =
-                    (
-                        normalized
-                        - 0.50
-                    )
-                    /
-                    0.25;
-
-
-                r =
-                    Math.round(
-                        255 * t
-                    );
-
-                g = 255;
-
-                b =
-                    Math.round(
-                        220 * (1 - t)
-                    );
-            }
-
-
-            // ------------------------------------------------
-            // 0.75 - 1.00
-            // Yellow → red
-            // ------------------------------------------------
-
-            else {
-
-                const t =
-                    (
-                        normalized
-                        - 0.75
-                    )
-                    /
-                    0.25;
-
-
-                r = 255;
-
-                g =
-                    Math.round(
-                        255 * (1 - t)
-                    );
-
-                b = 0;
-            }
-
-
-            return (
-                "rgb("
-                + r
-                + ","
-                + g
-                + ","
-                + b
-                + ")"
-            );
-        }
-
-
-        // ====================================================
-        // MATRIX RANGE
-        // ====================================================
-
-        function matrixRange(
-            matrix
-        ) {
-
-            let min =
-                Infinity;
-
-
-            let max =
-                -Infinity;
-
-
-            for (
-                let row = 0;
-                row < matrix.length;
-                row++
-            ) {
-
-                if (
-                    !Array.isArray(
-                        matrix[row]
-                    )
-                ) {
-                    continue;
+            let min = Infinity, max = -Infinity;
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    const v = matrix[r][c];
+                    if (v < min) min = v;
+                    if (v > max) max = v;
                 }
+            }
+            const range = (max - min) || 1;
 
+            const cellW = width / cols;
+            const cellH = height / rows;
 
-                for (
-                    let col = 0;
-                    col < matrix[row].length;
-                    col++
-                ) {
-
-                    const value =
-                        Number(
-                            matrix[row][col]
-                        );
-
-
-                    if (
-                        Number.isFinite(
-                            value
-                        )
-                    ) {
-
-                        if (
-                            value < min
-                        ) {
-
-                            min =
-                                value;
-                        }
-
-
-                        if (
-                            value > max
-                        ) {
-
-                            max =
-                                value;
-                        }
-                    }
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    const v = (matrix[r][c] - min) / range;
+                    const hue = 200 - (v * 160);
+                    ctx.fillStyle = `hsl(${hue}, 75%, ${18 + v * 42}%)`;
+                    ctx.fillRect(c * cellW, height - (r + 1) * cellH, cellW + 1, cellH + 1);
                 }
             }
 
-
-            if (
-                !Number.isFinite(min)
-                ||
-                !Number.isFinite(max)
-                ||
-                min === max
-            ) {
-
-                min = 0;
-
-                max = 1;
-            }
-
-
-            return {
-                min,
-                max
-            };
+            ctx.font = "11px var(--font-ui)";
+            ctx.fillStyle = "rgba(255,255,255,0.75)";
+            if (topLabel) ctx.fillText(topLabel, 8, 14);
+            if (bottomLabel) ctx.fillText(bottomLabel, 8, height - 7);
         }
 
-
-        // ====================================================
-        // DRAW HEATMAP
-        // ====================================================
-
-        function drawHeatmap(
-            canvasId,
-            matrix,
-            topLabel,
-            bottomLabel
-        ) {
-
-            const canvas =
-                el(canvasId);
-
-
-            if (
-                !canvas ||
-                !matrix ||
-                matrix.length === 0
-            ) {
-                return;
-            }
-
-
-            if (
-                !Array.isArray(
-                    matrix[0]
-                )
-                ||
-                matrix[0].length === 0
-            ) {
-                return;
-            }
-
-
-            const ctx =
-                canvas.getContext("2d");
-
-
-            const width =
-                canvas.width;
-
-
-            const height =
-                canvas.height;
-
-
-            ctx.clearRect(
-                0,
-                0,
-                width,
-                height
-            );
-
-
-            // ------------------------------------------------
-            // Background
-            // ------------------------------------------------
-
-            ctx.fillStyle =
-                "#020817";
-
-            ctx.fillRect(
-                0,
-                0,
-                width,
-                height
-            );
-
-
-            const rows =
-                matrix.length;
-
-
-            const cols =
-                matrix[0].length;
-
-
-            const cellWidth =
-                width / cols;
-
-
-            const cellHeight =
-                height / rows;
-
-
-            const range =
-                matrixRange(
-                    matrix
-                );
-
-
-            // ------------------------------------------------
-            // Draw cells
-            // ------------------------------------------------
-
-            for (
-                let row = 0;
-                row < rows;
-                row++
-            ) {
-
-                for (
-                    let col = 0;
-                    col < cols;
-                    col++
-                ) {
-
-                    const value =
-                        Number(
-                            matrix[row][col]
-                        );
-
-
-                    ctx.fillStyle =
-                        heatColor(
-                            value,
-                            range.min,
-                            range.max
-                        );
-
-
-                    // Reverse vertical axis
-
-                    const y =
-                        height
-                        -
-                        (
-                            row + 1
-                        )
-                        *
-                        cellHeight;
-
-
-                    ctx.fillRect(
-                        col * cellWidth,
-                        y,
-                        Math.ceil(
-                            cellWidth
-                        ) + 1,
-                        Math.ceil(
-                            cellHeight
-                        ) + 1
-                    );
-                }
-            }
-
-
-            // ------------------------------------------------
-            // Grid
-            // ------------------------------------------------
-
-            ctx.strokeStyle =
-                "rgba(255,255,255,0.08)";
-
-            ctx.lineWidth = 1;
-
-
-            for (
-                let i = 1;
-                i < 5;
-                i++
-            ) {
-
-                const x =
-                    width * i / 5;
-
-
-                ctx.beginPath();
-
-                ctx.moveTo(
-                    x,
-                    0
-                );
-
-                ctx.lineTo(
-                    x,
-                    height
-                );
-
-                ctx.stroke();
-            }
-
-
-            // ------------------------------------------------
-            // Labels
-            // ------------------------------------------------
-
-            ctx.font =
-                "11px Arial";
-
-
-            ctx.fillStyle =
-                "rgba(255,255,255,0.80)";
-
-
-            if (
-                topLabel
-            ) {
-
-                ctx.fillText(
-                    topLabel,
-                    8,
-                    14
-                );
-            }
-
-
-            if (
-                bottomLabel
-            ) {
-
-                ctx.fillText(
-                    bottomLabel,
-                    8,
-                    height - 7
-                );
-            }
+        function drawLogMel(matrix) {
+            drawHeatmap("logMelCanvas", matrix, "3400 Hz", "300 Hz");
         }
 
-
-        // ====================================================
-        // LOG-MEL
-        // ====================================================
-
-        function drawLogMel(
-            matrix
-        ) {
-
-            drawHeatmap(
-
-                "logMelCanvas",
-
-                matrix,
-
-                "3400 Hz",
-
-                "300 Hz"
-            );
+        function drawMFCC(matrix) {
+            drawHeatmap("mfccCanvas", matrix, "C12", "C0");
         }
 
-
-        // ====================================================
-        // MFCC
-        // ====================================================
-
-        function drawMFCC(
-            matrix
-        ) {
-
-            drawHeatmap(
-
-                "mfccCanvas",
-
-                matrix,
-
-                "C12",
-
-                "C0"
-            );
-        }
-
-
-        // ====================================================
-        // UPDATE DASHBOARD
-        // ====================================================
+        // --------------------------------------------------------------
+        // MAIN POLL LOOP
+        // --------------------------------------------------------------
 
         async function updateDashboard() {
-
             try {
+                const response = await fetch("/status", { method: "GET", cache: "no-store" });
+                if (!response.ok) throw new Error("HTTP " + response.status);
 
+                const data = await response.json();
 
-                const response =
-                    await fetch(
-                        "/status",
-                        {
-                            method:
-                                "GET",
+                setConnectionStatus(true);
+                updateProbability(data.probability);
+                updateDetectionCount(data.detection_count);
+                updateLatency(data);
+                updateLastDetection(data.last_detection_time);
+                updateLed(data);
 
-                            cache:
-                                "no-store"
-                        }
-                    );
+                if (Array.isArray(data.waveform)) drawWaveform(data.waveform);
+                if (Array.isArray(data.log_mel)) drawLogMel(data.log_mel);
+                if (Array.isArray(data.mfcc)) drawMFCC(data.mfcc);
 
-
-                if (
-                    !response.ok
-                ) {
-
-                    throw new Error(
-                        "HTTP "
-                        +
-                        response.status
-                    );
+                const currentCount = Number(data.detection_count || 0);
+                if (currentCount > lastDetectionCount) {
+                    console.log("ASTRA DETECTED — count:", currentCount, "confidence:", data.probability);
                 }
+                lastDetectionCount = currentCount;
 
-
-                const data =
-                    await response.json();
-
-
-                // ============================================
-                // CONNECTION
-                // ============================================
-
-                setConnectionStatus(
-                    true
-                );
-
-
-                // ============================================
-                // PROBABILITY
-                // ============================================
-
-                updateProbability(
-                    data.probability
-                );
-
-
-                // ============================================
-                // DETECTIONS
-                // ============================================
-
-                updateDetectionCount(
-                    data.detection_count
-                );
-
-
-                // ============================================
-                // LATENCY
-                // ============================================
-
-                updateLatency(
-                    data
-                );
-
-
-                updateLatencyStatus(
-                    data.total_time_ms
-                );
-
-
-                // ============================================
-                // DETECTION STATE
-                // ============================================
-
-                updateDetectionState(
-                    data
-                );
-
-
-                // ============================================
-                // WAVEFORM
-                // ============================================
-
-                if (
-                    Array.isArray(
-                        data.waveform
-                    )
-                ) {
-
-                    drawWaveform(
-                        data.waveform
-                    );
-                }
-
-
-                // ============================================
-                // LOG-MEL
-                // ============================================
-
-                if (
-                    Array.isArray(
-                        data.log_mel
-                    )
-                ) {
-
-                    drawLogMel(
-                        data.log_mel
-                    );
-                }
-
-
-                // ============================================
-                // MFCC
-                // ============================================
-
-                if (
-                    Array.isArray(
-                        data.mfcc
-                    )
-                ) {
-
-                    drawMFCC(
-                        data.mfcc
-                    );
-                }
-
-
-                // ============================================
-                // DETECTION EVENT LOG
-                // ============================================
-
-                const currentCount =
-                    Number(
-                        data.detection_count
-                        || 0
-                    );
-
-
-                if (
-                    currentCount
-                    >
-                    lastDetectionCount
-                ) {
-
-                    console.log(
-                        "================================"
-                    );
-
-                    console.log(
-                        "ALEXA DETECTED"
-                    );
-
-                    console.log(
-                        "Detection count:",
-                        currentCount
-                    );
-
-                    console.log(
-                        "Probability:",
-                        data.probability
-                    );
-
-                    console.log(
-                        "================================"
-                    );
-                }
-
-
-                lastDetectionCount =
-                    currentCount;
-
-
-            } catch (
-                error
-            ) {
-
-                console.error(
-                    "Dashboard error:",
-                    error
-                );
-
-
-                setConnectionStatus(
-                    false
-                );
+            } catch (error) {
+                console.error("Dashboard error:", error);
+                setConnectionStatus(false);
             }
         }
 
-
-        // ====================================================
+        // --------------------------------------------------------------
         // CANVAS RESIZE
-        // ====================================================
+        // --------------------------------------------------------------
 
         function resizeCanvases() {
-
-
-            const waveform =
-                el("waveformCanvas");
-
-
-            const logMel =
-                el("logMelCanvas");
-
-
-            const mfcc =
-                el("mfccCanvas");
-
-
-            if (
-                waveform
-            ) {
-
-                waveform.width =
-                    waveform.clientWidth
-                    || 900;
-
-                waveform.height =
-                    waveform.clientHeight
-                    || 215;
-            }
-
-
-            if (
-                logMel
-            ) {
-
-                logMel.width =
-                    logMel.clientWidth
-                    || 900;
-
-                logMel.height =
-                    logMel.clientHeight
-                    || 215;
-            }
-
-
-            if (
-                mfcc
-            ) {
-
-                mfcc.width =
-                    mfcc.clientWidth
-                    || 1800;
-
-                mfcc.height =
-                    mfcc.clientHeight
-                    || 215;
-            }
+            ["waveformCanvas", "logMelCanvas", "mfccCanvas"].forEach((id) => {
+                const c = el(id);
+                if (!c) return;
+                c.width = c.clientWidth || 900;
+                c.height = c.clientHeight || 200;
+            });
         }
 
+        document.addEventListener("DOMContentLoaded", function () {
+            resizeCanvases();
+            updateDashboard();
+            setInterval(updateDashboard, POLL_INTERVAL);
+        });
 
-        // ====================================================
-        // START
-        // ====================================================
-
-        document.addEventListener(
-            "DOMContentLoaded",
-            function () {
-
-
-                resizeCanvases();
-
-
-                updateDashboard();
-
-
-                setInterval(
-                    updateDashboard,
-                    POLL_INTERVAL
-                );
-
-            }
-        );
-
-
-        // ====================================================
-        // RESIZE
-        // ====================================================
-
-        window.addEventListener(
-            "resize",
-            function () {
-
-                resizeCanvases();
-
-                updateDashboard();
-            }
-        );
-
+        window.addEventListener("resize", function () {
+            resizeCanvases();
+            updateDashboard();
+        });
 
     </script>
 
 </body>
-
 </html>
